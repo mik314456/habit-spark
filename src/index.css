@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,51 +6,62 @@
 
 @layer base {
   :root {
-    --background: 35 30% 97%;
-    --foreground: 25 25% 12%;
+    /* Warm editorial palette */
+    --cream-color: #faf7f2;
+    --ink-color: #1c1917;
+    --muted-color: #a8a097;
+    --accent-color: #c96a3a;
+    --accent-light-color: #f0e6dc;
+    --card-color: #ffffff;
+    --card-border-color: #ede9e3;
+    --success-color: #5c7a5f;
 
-    --card: 35 30% 99%;
-    --card-foreground: 25 25% 12%;
+    /* Tailwind token mappings */
+    --background: 40 32% 96%; /* approx cream */
+    --foreground: 30 14% 12%; /* ink */
 
-    --popover: 35 30% 99%;
-    --popover-foreground: 25 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 14% 12%;
 
-    --primary: 25 92% 56%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 14% 12%;
+
+    --primary: 20 58% 50%; /* accent */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 150 25% 92%;
-    --secondary-foreground: 150 30% 25%;
+    --secondary: 32 25% 96%;
+    --secondary-foreground: 30 14% 20%;
 
-    --muted: 30 15% 93%;
-    --muted-foreground: 25 10% 50%;
+    --muted: 30 10% 72%;
+    --muted-foreground: 30 10% 45%;
 
-    --accent: 15 85% 62%;
+    --accent: 20 58% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 90%;
-    --input: 30 20% 88%;
-    --ring: 25 92% 56%;
+    --border: 32 24% 92%; /* card border */
+    --input: 32 24% 92%;
+    --ring: 20 58% 50%;
 
     --radius: 1rem;
 
-    /* Habit colors */
-    --habit-amber: 25 92% 56%;
-    --habit-sage: 150 35% 50%;
-    --habit-coral: 10 80% 62%;
-    --habit-sky: 200 75% 55%;
-    --habit-violet: 265 60% 60%;
-    --habit-rose: 340 70% 60%;
-    --habit-teal: 175 65% 45%;
-    --habit-slate: 215 20% 55%;
+    /* Habit colors (mapped into warm palette; kept for compatibility) */
+    --habit-amber: 20 58% 50%;
+    --habit-sage: 132 17% 43%; /* success sage-ish */
+    --habit-coral: 20 58% 50%;
+    --habit-sky: 210 20% 60%;
+    --habit-violet: 270 15% 55%;
+    --habit-rose: 350 30% 60%;
+    --habit-teal: 160 20% 45%;
+    --habit-slate: 220 10% 45%;
 
     /* Custom */
-    --gradient-warm: linear-gradient(135deg, hsl(25 92% 56%), hsl(15 85% 62%));
-    --gradient-sage: linear-gradient(135deg, hsl(150 35% 50%), hsl(170 40% 55%));
-    --shadow-card: 0 2px 16px -4px hsl(25 30% 20% / 0.08);
-    --shadow-elevated: 0 8px 32px -8px hsl(25 30% 20% / 0.12);
+    --gradient-warm: linear-gradient(135deg, #c96a3a, #e39a6a);
+    --gradient-sage: linear-gradient(135deg, #5c7a5f, #7d947f);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+    --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.08);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -116,16 +127,33 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
+    background-color: var(--cream-color);
+    position: relative;
+  }
+
+  ::selection {
+    background-color: var(--accent-light-color);
+    color: var(--ink-color);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-repeat: repeat;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Cormorant Garamond', serif;
   }
 
   .font-body {
@@ -146,5 +174,27 @@
 
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
+  }
+
+  .animate-habit-card {
+    animation: habit-card-fade 0.4s ease-out both;
+  }
+
+  .today-habit-list > .animate-habit-card:nth-child(1) { animation-delay: 0.12s; }
+  .today-habit-list > .animate-habit-card:nth-child(2) { animation-delay: 0.20s; }
+  .today-habit-list > .animate-habit-card:nth-child(3) { animation-delay: 0.28s; }
+  .today-habit-list > .animate-habit-card:nth-child(4) { animation-delay: 0.36s; }
+  .today-habit-list > .animate-habit-card:nth-child(5) { animation-delay: 0.44s; }
+  .today-habit-list > .animate-habit-card:nth-child(6) { animation-delay: 0.52s; }
+
+  @keyframes habit-card-fade {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

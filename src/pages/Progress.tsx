@@ -59,11 +59,11 @@ export default function Progress() {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 pt-12">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl mb-8">Progress</h1>
+          <h1 className="font-body text-2xl mb-8">Progress</h1>
         </motion.div>
 
         {activeHabits.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
+          <div className="text-center py-16 text-muted-foreground font-body">
             <p className="mb-4 flex justify-center">
               <BarChart2 className="w-10 h-10" />
             </p>
@@ -73,30 +73,44 @@ export default function Progress() {
           <>
             {/* Streak hero */}
             <motion.div
-              className="text-center p-8 rounded-3xl gradient-warm text-primary-foreground mb-6 shadow-elevated"
+              className="text-center p-8 rounded-3xl mb-6 shadow-card border-2 border-[color:var(--accent-color)] bg-[color:var(--card-color)]"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Flame className="w-6 h-6" />
-                <p className="text-5xl font-display">{currentStreak}</p>
+                <Flame className="w-6 h-6" style={{ color: 'var(--accent-color)' }} />
+                <p className="text-5xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
+                  {currentStreak}
+                </p>
               </div>
-              <p className="text-sm opacity-80 mt-1">day streak</p>
+              <p className="text-sm mt-1 font-body font-medium" style={{ color: 'var(--ink-color)' }}>
+                day streak
+              </p>
             </motion.div>
 
             {/* Weekly strip */}
             <div className="flex justify-between mb-6 px-2">
               {weekDays.map(day => (
                 <div key={day.dateStr} className="flex flex-col items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground font-medium">{day.label}</span>
+                  <span className="text-[10px] text-muted-foreground font-medium font-body">{day.label}</span>
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                      day.ratio >= 1
-                        ? 'bg-primary text-primary-foreground'
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium font-body transition-colors"
+                    style={
+                      day.isToday
+                        ? {
+                            backgroundColor: 'var(--accent-color)',
+                            color: '#ffffff',
+                          }
                         : day.ratio > 0
-                        ? 'bg-primary/30 text-foreground'
-                        : 'bg-muted text-muted-foreground'
-                    } ${day.isToday ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          ? {
+                              backgroundColor: 'var(--accent-light-color)',
+                              color: 'var(--accent-color)',
+                            }
+                          : {
+                              backgroundColor: 'var(--card-border-color)',
+                              color: 'var(--muted-color)',
+                            }
+                    }
                   >
                     {format(day.date, 'd')}
                   </div>
@@ -106,22 +120,30 @@ export default function Progress() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="p-4 rounded-2xl bg-card shadow-card">
-                <p className="text-2xl font-display">{completionRate(7)}%</p>
-                <p className="text-xs text-muted-foreground mt-1">Last 7 days</p>
+              <div className="p-4 rounded-2xl bg-card shadow-card border border-[color:var(--card-border-color)]">
+                <p className="text-2xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
+                  {completionRate(7)}%
+                </p>
+                <p className="text-xs mt-1 font-body" style={{ color: 'var(--muted-color)' }}>
+                  Last 7 days
+                </p>
               </div>
-              <div className="p-4 rounded-2xl bg-card shadow-card">
-                <p className="text-2xl font-display">{completionRate(30)}%</p>
-                <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+              <div className="p-4 rounded-2xl bg-card shadow-card border border-[color:var(--card-border-color)]">
+                <p className="text-2xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
+                  {completionRate(30)}%
+                </p>
+                <p className="text-xs mt-1 font-body" style={{ color: 'var(--muted-color)' }}>
+                  Last 30 days
+                </p>
               </div>
             </div>
 
             {/* Calendar */}
             <div className="p-5 rounded-2xl bg-card shadow-card mb-6">
-              <h3 className="font-display text-lg mb-4">{format(today, 'MMMM yyyy')}</h3>
+              <h3 className="font-body font-semibold text-lg mb-4">{format(today, 'MMMM yyyy')}</h3>
               <div className="grid grid-cols-7 gap-1 text-center">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                  <span key={i} className="text-[10px] text-muted-foreground font-medium py-1">{d}</span>
+                  <span key={i} className="text-[10px] text-muted-foreground font-medium font-body py-1">{d}</span>
                 ))}
                 {Array.from({ length: startPadding }).map((_, i) => (
                   <div key={`pad-${i}`} />
@@ -136,7 +158,7 @@ export default function Progress() {
                   return (
                     <div
                       key={dateStr}
-                      className={`aspect-square rounded-lg flex items-center justify-center text-xs transition-colors ${
+                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-body transition-colors ${
                         ratio >= 1
                           ? 'bg-primary text-primary-foreground'
                           : ratio > 0
@@ -153,21 +175,21 @@ export default function Progress() {
 
             {/* Per-habit breakdown */}
             <div className="space-y-3">
-              <h3 className="font-display text-lg">By Habit</h3>
+              <h3 className="font-body font-semibold text-lg">By Habit</h3>
               {activeHabits.map(habit => {
                 const streak = getHabitStreak(habit.id);
                 const rate = completionRate(7); // simplified
                 return (
                   <div key={habit.id} className="flex items-center gap-3 p-4 rounded-2xl bg-card shadow-card">
-                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-xs font-semibold">
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-xs font-semibold font-body">
                       {habit.title.charAt(0)}
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{habit.title}</p>
-                      <p className="text-xs text-muted-foreground">{streak} day streak</p>
+                      <p className="text-sm font-medium font-body">{habit.title}</p>
+                      <p className="text-xs text-muted-foreground font-body">{streak} day streak</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-primary">{rate}%</p>
+                      <p className="text-sm font-semibold text-primary font-body">{rate}%</p>
                     </div>
                   </div>
                 );

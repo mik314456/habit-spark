@@ -60,18 +60,22 @@ export default function Onboarding() {
 
   const screens = [
     // Screen 0: Welcome
-    <motion.div key="welcome" className="flex flex-col items-center justify-between h-full px-6 py-12">
+    <motion.div key="welcome" className="flex flex-col items-center justify-between h-full px-6 py-16">
       <div />
       <div className="flex flex-col items-center gap-6">
         <img src={welcomeIllustration} alt="Growing plants" className="w-64 h-64 object-contain" />
-        <h1 className="text-3xl text-center leading-tight">Small habits.<br />Remarkable results.</h1>
-        <p className="text-muted-foreground text-center max-w-xs">
+        <h1 className="font-body font-semibold text-[2.4rem] leading-tight text-center text-foreground">
+          Small habits.
+          <br />
+          Remarkable results.
+        </h1>
+        <p className="text-muted-foreground text-center max-w-xs font-body text-sm">
           Build the life you want, one tiny habit at a time.
         </p>
       </div>
       <button
         onClick={next}
-        className="w-full py-4 rounded-2xl gradient-warm font-semibold text-primary-foreground text-lg shadow-elevated transition-transform active:scale-95"
+        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95"
       >
         Get Started
       </button>
@@ -80,24 +84,28 @@ export default function Onboarding() {
     // Screen 1: Identity
     <motion.div key="identity" className="flex flex-col h-full px-6 py-12">
       <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="text-3xl mb-3">Who do you want to become?</h1>
-      <p className="text-muted-foreground mb-8">Your identity shapes your habits. Start with who you want to be.</p>
+      <h1 className="font-body font-semibold text-[2.1rem] leading-snug mb-3 text-foreground">
+        Who do you want to become?
+      </h1>
+      <p className="text-muted-foreground mb-8 font-body text-sm">
+        Your identity shapes your habits. Start with who you want to be.
+      </p>
       <input
         type="text"
         value={identity}
         onChange={e => setIdentity(e.target.value.slice(0, 60))}
         placeholder="e.g. A healthy person"
-        className="w-full p-4 rounded-xl bg-card border border-border text-lg focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4"
+        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-4"
       />
       <div className="flex flex-wrap gap-2 mb-auto">
         {identityChips.map(chip => (
           <button
             key={chip}
             onClick={() => setIdentity(chip)}
-            className={`px-4 py-2 rounded-full text-sm transition-all ${
+            className={`px-4 py-2 rounded-full text-[13px] font-body border transition-all ${
               identity === chip
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)]'
+                : 'border-[color:var(--card-border-color)] text-muted-foreground hover:border-[color:var(--accent-color)]/60'
             }`}
           >
             {chip}
@@ -107,7 +115,7 @@ export default function Onboarding() {
       <button
         onClick={next}
         disabled={!identity.trim()}
-        className="w-full py-4 rounded-2xl gradient-warm font-semibold text-primary-foreground text-lg shadow-elevated transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Continue
       </button>
@@ -116,8 +124,12 @@ export default function Onboarding() {
     // Screen 2: Habit Picker
     <motion.div key="picker" className="flex h-screen flex-col px-6 pt-12">
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">← Back</button>
-      <h1 className="text-2xl mb-2">Pick your first habit</h1>
-      <p className="text-muted-foreground mb-6 text-sm">Start with one. You can always add more later.</p>
+      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-2 text-foreground">
+        Pick your first habit
+      </h1>
+      <p className="text-muted-foreground mb-6 text-sm font-body">
+        Start with one. You can always add more later.
+      </p>
       <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-4">
         {HABIT_CATEGORIES.map(cat => {
           const templates = HABIT_TEMPLATES.filter(t => t.category === cat);
@@ -126,28 +138,43 @@ export default function Onboarding() {
             <div key={cat} className="mb-6">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 font-body">{cat}</h3>
               <div className="grid grid-cols-2 gap-3">
-                {templates.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => {
-                      setSelectedTemplate(t);
-                      setHabitAction(t.smallVersion);
-                      setHabitTime(t.defaultTime);
-                      setHabitLocation(t.defaultLocation);
-                    }}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                      selectedTemplate?.id === t.id
-                        ? 'border-primary bg-primary/5 shadow-card'
-                        : 'border-transparent bg-card shadow-card hover:border-border'
-                    }`}
-                  >
-                    {(() => {
-                      const Icon = getHabitIconByTitle(t.title);
-                      return <Icon className="w-6 h-6 text-muted-foreground" />;
-                    })()}
-                    <span className="text-sm font-medium">{t.title}</span>
-                  </button>
-                ))}
+                {templates.map(t => {
+                  const isSelected = selectedTemplate?.id === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setSelectedTemplate(t);
+                        setHabitAction(t.smallVersion);
+                        setHabitTime(t.defaultTime);
+                        setHabitLocation(t.defaultLocation);
+                      }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
+                        isSelected
+                          ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card'
+                          : 'border-[color:var(--card-border-color)] bg-card shadow-card hover:border-[color:var(--accent-color)]/60'
+                      }`}
+                    >
+                      {(() => {
+                        const Icon = getHabitIconByTitle(t.title);
+                        return (
+                          <Icon
+                            className={`w-6 h-6 ${
+                              isSelected ? 'text-[color:var(--accent-color)]' : 'text-muted-foreground'
+                            }`}
+                          />
+                        );
+                      })()}
+                      <span
+                        className={`text-sm font-body font-medium ${
+                          isSelected ? 'text-[color:var(--accent-color)]' : ''
+                        }`}
+                      >
+                        {t.title}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
@@ -157,7 +184,7 @@ export default function Onboarding() {
         <button
           onClick={next}
           disabled={!selectedTemplate}
-          className="w-full py-4 rounded-2xl gradient-warm font-semibold text-primary-foreground text-lg shadow-elevated transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Continue
         </button>
@@ -167,9 +194,11 @@ export default function Onboarding() {
     // Screen 3: Habit Sizing
     <motion.div key="sizing" className="flex flex-col h-full px-6 py-12">
       <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="text-2xl mb-3">Make it tiny</h1>
-      <p className="text-muted-foreground mb-2">What's the 2-minute version?</p>
-      <p className="text-sm text-muted-foreground/70 mb-8 italic">
+      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-3 text-foreground">
+        Make it tiny
+      </h1>
+      <p className="text-muted-foreground mb-2 font-body text-sm">What's the 2-minute version?</p>
+      <p className="text-[13px] text-muted-foreground/80 mb-8 font-body">
         "{selectedTemplate?.suggestion}" → "{selectedTemplate?.smallVersion}"
       </p>
       <div className="flex items-center gap-3 mb-4">
@@ -179,18 +208,18 @@ export default function Onboarding() {
             return <Icon className="w-7 h-7 text-muted-foreground" />;
           })()
         )}
-        <span className="font-display text-xl">{selectedTemplate?.title}</span>
+        <span className="font-body text-xl font-medium">{selectedTemplate?.title}</span>
       </div>
       <input
         type="text"
         value={habitAction}
         onChange={e => setHabitAction(e.target.value)}
-        className="w-full p-4 rounded-xl bg-card border border-border text-lg focus:outline-none focus:ring-2 focus:ring-primary/30 mb-auto"
+        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-auto"
       />
       <button
         onClick={next}
         disabled={!habitAction.trim()}
-        className="w-full py-4 rounded-2xl gradient-warm font-semibold text-primary-foreground text-lg shadow-elevated transition-transform active:scale-95 disabled:opacity-40"
+        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40"
       >
         Continue
       </button>
@@ -199,15 +228,19 @@ export default function Onboarding() {
     // Screen 4: Implementation Intention
     <motion.div key="intention" className="flex flex-col h-full px-6 py-12">
       <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="text-2xl mb-3">When and where?</h1>
-      <p className="text-muted-foreground mb-8">Make it specific. When will you do this?</p>
+      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-3 text-foreground">
+        When and where?
+      </h1>
+      <p className="text-muted-foreground mb-8 font-body text-sm">
+        Make it specific. When will you do this?
+      </p>
 
       <label className="text-sm font-medium text-muted-foreground mb-2 font-body">Time</label>
       <input
         type="time"
         value={habitTime}
         onChange={e => setHabitTime(e.target.value)}
-        className="w-full p-4 rounded-xl bg-card border border-border text-lg focus:outline-none focus:ring-2 focus:ring-primary/30 mb-6"
+        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-6"
       />
 
       <label className="text-sm font-medium text-muted-foreground mb-2 font-body">Location</label>
@@ -216,20 +249,21 @@ export default function Onboarding() {
         value={habitLocation}
         onChange={e => setHabitLocation(e.target.value)}
         placeholder="e.g. at my desk"
-        className="w-full p-4 rounded-xl bg-card border border-border text-lg focus:outline-none focus:ring-2 focus:ring-primary/30 mb-6"
+        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-6"
       />
 
-      <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 mb-auto">
-        <p className="text-center font-display text-lg">
-          I will <span className="text-primary font-bold">{habitAction}</span>{' '}
-          at <span className="text-primary font-bold">{habitTime}</span>{' '}
-          <span className="text-primary font-bold">{habitLocation}</span>
+      <div className="p-5 rounded-2xl bg-[color:var(--accent-light-color)] border border-[color:var(--card-border-color)] mb-auto">
+        <p className="text-center font-display text-lg italic text-foreground">
+          I will{' '}
+          <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitAction}</span>{' '}
+          at <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitTime}</span>{' '}
+          <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitLocation}</span>
         </p>
       </div>
 
       <button
         onClick={finish}
-        className="w-full py-4 rounded-2xl gradient-warm font-semibold text-primary-foreground text-lg shadow-elevated transition-transform active:scale-95"
+        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95"
       >
         Start Building
       </button>

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, subDays } from 'date-fns';
-import { motion } from 'framer-motion';
-import { Plus, Sprout } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertTriangle, Plus, Sprout } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import HabitCard from '@/components/HabitCard';
 import TabBar from '@/components/TabBar';
@@ -30,37 +29,31 @@ export default function Today() {
     () => state.habits.filter(h => !h.archived),
     [state.habits],
   );
+
+  const todayKey = `dontMiss-${format(new Date(), 'yyyy-MM-dd')}`;
+  const [showDontMissBanner, setShowDontMissBanner] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage.getItem(todayKey)) {
+      return false;
+    }
+
+    const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+    const yesterdayLogs = state.habitLogs?.filter(l => l.date === yesterday) ?? [];
+    return activeHabits.length > 0 && yesterdayLogs.length === 0;
+  });
   const completedCount = activeHabits.filter(h => isHabitCompletedToday(h.id)).length;
 
   const now = new Date();
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-
-  // End-of-day "Don't miss twice" reminder
-  useEffect(() => {
-    const todayStr = format(now, 'yyyy-MM-dd');
-    const yesterdayStr = format(subDays(now, 1), 'yyyy-MM-dd');
-
-    if (activeHabits.length === 0) return;
-
-    const hadMissYesterday = activeHabits.some(habit => {
-      const logs = state.habitLogs.filter(l => l.habitId === habit.id && l.date === yesterdayStr);
-      const completed = logs.some(l => l.completed);
-      return !completed;
-    });
-
-    if (!hadMissYesterday) return;
-
-    const hasCompletedToday = activeHabits.some(habit =>
-      state.habitLogs.some(l => l.habitId === habit.id && l.date === todayStr && l.completed),
-    );
-
-    if (hasCompletedToday) return;
-
-    toast.warning("Don't miss twice.", {
-      description: 'You skipped yesterday. Complete at least one habit today to keep your streak alive.',
-    });
-  }, [now, activeHabits, state.habitLogs]);
+  const greeting =
+    hour < 5
+      ? 'Still up?'
+      : hour < 12
+        ? 'Good morning'
+        : hour < 17
+          ? 'Good afternoon'
+          : hour < 21
+            ? 'Good evening'
+            : 'Good night';
 
   // Milestone celebrations (3, 7, 14, 21, 30, 50, 100)
   useEffect(() => {
@@ -93,17 +86,45 @@ export default function Today() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 pt-12">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <p className="text-muted-foreground text-sm font-medium">{format(now, 'EEEE, MMMM d')}</p>
-          <h1 className="text-2xl mt-1">{greeting}</h1>
-          {state.identityStatement?.trim() && (
-            <p className="text-muted-foreground text-sm mt-2">
-              Every rep counts toward becoming <span className="text-foreground font-medium">{state.identityStatement.trim()}</span>.
-            </p>
+        <AnimatePresence>
+          {showDontMissBanner && (
+            <motion.div
+              className="fixed top-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
+              initial={{ y: -40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -40, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+            >
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-foreground/90 text-background px-3 py-1 text-xs pointer-events-auto">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Don&apos;t miss twice. Yesterday wasn&apos;t logged.</span>
+                <button
+                  type="button"
+                  className="ml-1 text-[10px] text-background/80 hover:text-background"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.setItem(todayKey, 'true');
+                    }
+                    setShowDontMissBanner(false);
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase font-body">
+            {format(now, 'EEEE, MMMM d')}
+          </p>
+          <h1 className="mt-2 font-body font-semibold text-[2.6rem] leading-tight text-foreground">
+            {greeting}
+          </h1>
           {activeHabits.length > 0 && (
-            <p className="text-muted-foreground text-sm mt-2">
+            <p className="text-muted-foreground text-sm mt-3 font-body">
               {completedCount} of {activeHabits.length} habits done today
             </p>
           )}
@@ -129,20 +150,35 @@ export default function Today() {
             </button>
           </motion.div>
         ) : (
-          <div>
-            {activeHabits.map(habit => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                streak={getHabitStreak(habit.id)}
-                completed={isHabitCompletedToday(habit.id)}
-                skipped={isHabitSkippedToday(habit.id)}
-                onComplete={() => toggleHabitCompletion(habit.id)}
-                onSkip={() => skipHabit(habit.id)}
-                onDelete={() => deleteHabit(habit.id)}
-                onOpenDetails={() => setDetailHabitId(habit.id)}
-              />
-            ))}
+          <div className="today-habit-list">
+            {activeHabits.map(habit => {
+              const rawIdentity = habit.why?.trim() || '';
+              const cleanedIdentity = rawIdentity.toLowerCase().startsWith('to become ')
+                ? rawIdentity.slice('to become '.length).trim()
+                : rawIdentity;
+
+              return (
+                <HabitCard
+                  key={habit.id}
+                  habit={habit}
+                  streak={getHabitStreak(habit.id)}
+                  completed={isHabitCompletedToday(habit.id)}
+                  skipped={isHabitSkippedToday(habit.id)}
+                  showIdentityWhisper={!!habit.why}
+                  identityStatement={cleanedIdentity}
+                  onComplete={() => {
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.setItem(todayKey, 'true');
+                    }
+                    setShowDontMissBanner(false);
+                    toggleHabitCompletion(habit.id);
+                  }}
+                  onSkip={() => skipHabit(habit.id)}
+                  onDelete={() => deleteHabit(habit.id)}
+                  onOpenDetails={() => setDetailHabitId(habit.id)}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -151,8 +187,8 @@ export default function Today() {
       {activeHabits.length > 0 && (
         <motion.button
           onClick={() => setShowAddHabit(true)}
-          className="fixed bottom-20 right-5 w-14 h-14 rounded-full gradient-warm text-primary-foreground shadow-elevated flex items-center justify-center z-40"
-          whileTap={{ scale: 0.9 }}
+          className="fixed bottom-20 right-5 w-[52px] h-[52px] rounded-full bg-[color:var(--accent-color)] text-white shadow-card flex items-center justify-center z-40 transition-transform duration-150"
+          whileTap={{ scale: 0.95 }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', delay: 0.3 }}

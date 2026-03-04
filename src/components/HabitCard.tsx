@@ -1,6 +1,21 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Flame, MoreVertical } from 'lucide-react';
+import {
+  Check,
+  Flame,
+  MoreVertical,
+  Dumbbell,
+  Brain,
+  BookOpen,
+  Droplets,
+  Heart,
+  Moon,
+  Pencil,
+  Music,
+  Phone,
+  Apple,
+  Bike,
+} from 'lucide-react';
 import { Habit, HabitColor, HABIT_COLOR_MAP } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
 
@@ -20,6 +35,8 @@ interface HabitCardProps {
   streak: number;
   completed: boolean;
   skipped: boolean;
+  showIdentityWhisper?: boolean;
+  identityStatement?: string;
   onComplete: () => void;
   onSkip: () => void;
   onDelete: () => void;
@@ -31,6 +48,8 @@ export default function HabitCard({
   streak,
   completed,
   skipped,
+  showIdentityWhisper,
+  identityStatement,
   onComplete,
   onSkip,
   onDelete,
@@ -45,7 +64,24 @@ export default function HabitCard({
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
 
   const colors = colorClasses[habit.color];
-  const HabitIcon = getHabitIconByTitle(habit.title);
+
+  const explicitKey = habit.icon?.startsWith('lucide:') ? habit.icon.slice(7) : undefined;
+  const explicitMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    dumbbell: Dumbbell,
+    brain: Brain,
+    book: BookOpen,
+    droplets: Droplets,
+    heart: Heart,
+    moon: Moon,
+    pencil: Pencil,
+    music: Music,
+    phone: Phone,
+    apple: Apple,
+    bike: Bike,
+    flame: Flame,
+  };
+  const ExplicitIcon = explicitKey ? explicitMap[explicitKey] : undefined;
+  const HabitIcon = ExplicitIcon ?? getHabitIconByTitle(habit.title);
 
   const startHold = useCallback(() => {
     if (skipped) return;
@@ -105,25 +141,20 @@ export default function HabitCard({
   const fillAmount = completed && !isHolding ? 1 : holdProgress;
 
   return (
-    <motion.div
-      className="relative mb-3"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      layout
-    >
+    <motion.div className="relative mb-3 animate-habit-card" layout>
       <motion.div
-        className="relative rounded-2xl bg-card shadow-card overflow-hidden select-none"
+        className="relative rounded-[14px] bg-card shadow-card overflow-hidden select-none border"
         onPointerDown={startHold}
         onPointerUp={endHold}
         onPointerLeave={endHold}
       >
         {/* Horizontal fill overlay */}
         <motion.div
-          className="absolute inset-0 rounded-2xl origin-left pointer-events-none"
+          className="absolute inset-0 rounded-[14px] origin-left pointer-events-none"
           style={{
-            backgroundColor: `hsl(${HABIT_COLOR_MAP[habit.color]})`,
+            backgroundColor: 'var(--accent-light-color)',
             transform: `scaleX(${fillAmount || 0})`,
-            opacity: completed ? (justCompleted ? 0.7 : 0.22) : isHolding ? 0.3 : 0,
+            opacity: completed ? (justCompleted ? 0.65 : 0.28) : isHolding ? 0.3 : 0,
           }}
           transition={{
             transform: { duration: 0.3, ease: 'easeInOut' },
@@ -134,29 +165,40 @@ export default function HabitCard({
         <div className="relative z-10 flex items-center gap-4 p-4">
           {/* Icon + content */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0`}
-            style={{ backgroundColor: `hsl(${HABIT_COLOR_MAP[habit.color]})` }}
-          >
-            <HabitIcon className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className={`font-medium text-sm ${completed ? 'line-through opacity-60' : ''} ${skipped ? 'opacity-50' : ''}`}>
-              {habit.title}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {habit.timeOfDay} · {habit.location}
-            </p>
-          </div>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: 'var(--accent-light-color)' }}
+            >
+              <HabitIcon className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p
+                className={`font-body text-[15px] font-medium ${
+                  completed ? 'line-through opacity-50' : ''
+                } ${skipped ? 'opacity-50' : ''}`}
+              >
+                {habit.title}
+              </p>
+              <p className="font-body text-[12px] text-muted-foreground truncate">
+                {habit.timeOfDay} · {habit.location}
+              </p>
+              {showIdentityWhisper && identityStatement?.trim() && (
+                <p className="mt-0.5 text-[13px] text-muted-foreground/80 italic leading-snug font-display">
+                  To become{' '}
+                  <span className="font-medium not-italic text-foreground/90">
+                    {identityStatement.trim()}
+                  </span>
+                  .
+                </p>
+              )}
+            </div>
           </div>
 
         <div className="flex items-center gap-2">
           {/* Streak badge */}
           {streak > 0 && (
             <motion.div
-              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                completed ? `${colors.bg} text-primary-foreground` : 'bg-muted text-muted-foreground'
-              }`}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium bg-[color:var(--accent-color)] text-white"
               animate={justCompleted ? { scale: [1, 1.3, 1] } : {}}
               transition={{ duration: 0.2 }}
             >
@@ -173,7 +215,7 @@ export default function HabitCard({
               animate={completed ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
             >
-              <Check className="w-4 h-4" style={{ color: `hsl(${HABIT_COLOR_MAP[habit.color]})` }} />
+              <Check className="w-4 h-4" style={{ color: 'var(--success-color)' }} />
             </motion.div>
           </div>
 

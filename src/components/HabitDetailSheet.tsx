@@ -115,14 +115,14 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm flex items-end"
+          className="fixed inset-0 z-50 bg-black/10 backdrop-blur-sm flex items-end"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-md mx-auto bg-card rounded-t-[24px] max-h-[92vh] overflow-y-auto shadow-2xl border border-border"
+            className="w-full max-w-md mx-auto bg-card rounded-t-[24px] max-h-[92vh] overflow-y-auto shadow-card border border-[color:var(--card-border-color)]"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -131,33 +131,37 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
           >
             {/* Handle + close */}
             <div className="relative px-5 pt-4 pb-2">
-              <div className="h-1 w-10 rounded-full bg-border/80 mx-auto mb-3" />
+              <div className="h-1 w-10 rounded-full bg-[color:var(--card-border-color)] mx-auto mb-3" />
               <button
                 onClick={onClose}
-                className="absolute right-5 top-4 text-muted-foreground hover:text-foreground"
+                className="absolute right-5 top-4 text-[color:var(--muted-color)] hover:text-foreground"
               >
                 <X size={18} />
               </button>
-              <h2 className="font-display text-xl mb-1 pr-8 truncate">{habit.title}</h2>
+              <h2 className="font-display text-xl mb-1 pr-8 truncate" style={{ color: 'var(--ink-color)' }}>
+                {habit.title}
+              </h2>
             </div>
 
             <div className="px-5 pb-6 space-y-6">
               {/* Top stats: streak + 30-day rate */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-border/80 bg-background/40 px-3 py-3 space-y-1.5">
+                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 space-y-1.5 shadow-card">
                   <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-body">
                     Streak
                   </p>
                   <div className="flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-display">{currentStreak}</span>
+                    <Flame className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                    <span className="text-2xl font-display" style={{ color: 'var(--ink-color)' }}>
+                      {currentStreak}
+                    </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     day streak · best {bestStreak}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-border/80 bg-background/40 px-3 py-3 flex flex-col items-center justify-center">
+                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 flex flex-col items-center justify-center shadow-card">
                   <div className="relative w-16 h-16 mb-1">
                     <svg viewBox="0 0 100 100" className="w-full h-full">
                       <circle
@@ -181,7 +185,9 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-sm font-semibold">{clampedRate}%</span>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--ink-color)' }}>
+                        {clampedRate}%
+                      </span>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">Last 30 days</p>
@@ -189,11 +195,13 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
               </div>
 
               {/* Calendar */}
-              <div className="rounded-2xl border border-border/80 bg-background/40 px-4 py-4">
+              <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-4 py-4 shadow-card">
                 <p className="text-[11px] text-muted-foreground mb-2 font-body uppercase tracking-[0.16em]">
                   History
                 </p>
-                <p className="text-sm font-medium mb-3">{format(today, 'MMMM yyyy')}</p>
+                <p className="text-sm font-medium mb-3" style={{ color: 'var(--ink-color)' }}>
+                  {format(today, 'MMMM yyyy')}
+                </p>
                 <div className="grid grid-cols-7 gap-2 text-center text-[11px]">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
                     <span key={i} className="text-[10px] text-muted-foreground font-medium">
@@ -206,16 +214,15 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   {calendarDays.map(day => {
                     const status = statusForDate(day);
                     const isToday = isSameDay(day, today);
-                    const baseColor = HABIT_COLOR_MAP[habit.color];
                     let style: React.CSSProperties = {};
                     let className =
                       'w-7 h-7 flex items-center justify-center rounded-full mx-auto';
 
                     if (status === 'completed') {
-                      style.backgroundColor = `hsl(${baseColor})`;
-                      className += ' text-primary-foreground';
+                      style.backgroundColor = 'var(--accent-light-color)';
+                      className += ' text-[color:var(--accent-color)]';
                     } else if (status === 'skipped') {
-                      style.borderColor = `hsl(${baseColor})`;
+                      style.borderColor = 'var(--accent-color)';
                       style.borderWidth = 1;
                       className += ' text-muted-foreground border';
                     } else {
@@ -223,7 +230,9 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                     }
 
                     if (isToday) {
-                      className += ' ring-1 ring-white';
+                      className += ' ring-1';
+                      style.outlineColor = 'var(--accent-color)';
+                      style.outlineWidth = '1px';
                     }
 
                     return (
@@ -243,7 +252,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   <label className="text-[11px] text-muted-foreground font-body">Name</label>
                   <input
                     type="text"
-                    className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/25"
+                    style={{ backgroundColor: 'var(--cream-color)', borderColor: 'var(--card-border-color)', color: 'var(--ink-color)' }}
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                   />
@@ -253,7 +263,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                     <label className="text-[11px] text-muted-foreground font-body">Time</label>
                     <input
                       type="time"
-                      className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/25"
+                      style={{ backgroundColor: 'var(--cream-color)', borderColor: 'var(--card-border-color)', color: 'var(--ink-color)' }}
                       value={timeOfDay}
                       onChange={e => setTimeOfDay(e.target.value)}
                     />
@@ -262,7 +273,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                     <label className="text-[11px] text-muted-foreground font-body">Location</label>
                     <input
                       type="text"
-                      className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/25"
+                      style={{ backgroundColor: 'var(--cream-color)', borderColor: 'var(--card-border-color)', color: 'var(--ink-color)' }}
                       value={location}
                       onChange={e => setLocation(e.target.value)}
                     />
@@ -272,7 +284,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   <label className="text-[11px] text-muted-foreground font-body">Why</label>
                   <input
                     type="text"
-                    className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/25"
+                    style={{ backgroundColor: 'var(--cream-color)', borderColor: 'var(--card-border-color)', color: 'var(--ink-color)' }}
                     value={why}
                     onChange={e => setWhy(e.target.value)}
                     placeholder="e.g. To become my best self"
@@ -282,14 +295,16 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                 <div className="flex items-center justify-between pt-2">
                   <button
                     onClick={handleDelete}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] text-muted-foreground border border-border/60 hover:bg-muted/40"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] border hover:bg-[color:var(--accent-light-color)]/60"
+                    style={{ color: 'var(--muted-color)', borderColor: 'var(--card-border-color)' }}
                   >
                     <Trash2 size={14} />
                     Delete
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex-1 ml-3 py-2.5 rounded-2xl gradient-warm text-primary-foreground text-sm font-semibold shadow-elevated"
+                    className="flex-1 ml-3 py-2.5 rounded-full text-sm font-semibold shadow-card"
+                    style={{ backgroundColor: 'var(--accent-color)', color: '#ffffff' }}
                   >
                     Save changes
                   </button>
