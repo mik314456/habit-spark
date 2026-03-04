@@ -1,16 +1,20 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { AppState, Habit, HabitLog, loadState, saveState, getToday, generateId } from '@/lib/habitData';
+import { AppState, Habit, HabitLog, loadState, saveState, getToday, generateId, MilestoneCelebration } from '@/lib/habitData';
 
 interface AppContextType {
   state: AppState;
   completeOnboarding: (identity: string) => void;
+  updateIdentityStatement: (identity: string) => void;
+  setSoundEnabled: (enabled: boolean) => void;
   addHabit: (habit: Omit<Habit, 'id' | 'createdAt' | 'archived'>) => void;
+  updateHabit: (habitId: string, updates: Partial<Habit>) => void;
   toggleHabitCompletion: (habitId: string) => void;
   skipHabit: (habitId: string) => void;
   deleteHabit: (habitId: string) => void;
   isHabitCompletedToday: (habitId: string) => boolean;
   isHabitSkippedToday: (habitId: string) => boolean;
   getHabitStreak: (habitId: string) => number;
+  markMilestoneCelebrated: (habitId: string, milestone: number) => void;
   resetApp: () => void;
 }
 
@@ -18,6 +22,10 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(loadState);
+
+  const reminderSentRef = React.useRef<Record<string, string>>({});
+  const dontMissTwiceSentRef = React.useRef<Record<string, string>>({});
+  const notificationPermissionRequestedRef = React.useRef(false);
 
   useEffect(() => {
     saveState(state);
@@ -27,14 +35,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, onboardingComplete: true, identityStatement: identity }));
   }, []);
 
+  const updateIdentityStatement = useCallback((identity: string) => {
+    setState(prev => ({ ...prev, identityStatement: identity }));
+  }, []);
+
+  const setSoundEnabled = useCallback((enabled: boolean) => {
+    setState(prev => ({ ...prev, soundEnabled: enabled }));
+  }, []);
+
   const addHabit = useCallback((habit: Omit<Habit, 'id' | 'createdAt' | 'archived'>) => {
     const newHabit: Habit = {
       ...habit,
       id: generateId(),
       createdAt: new Date().toISOString(),
       archived: false,
+      smartReminderEnabled: habit.smartReminderEnabled ?? false,
+      reminderTime: habit.reminderTime ?? habit.timeOfDay,
     };
     setState(prev => ({ ...prev, habits: [...prev.habits, newHabit] }));
+  }, []);
+
+  const updateHabit = useCallback((habitId: string, updates: Partial<Habit>) => {
+    setState(prev => ({
+      ...prev,
+      habits: prev.habits.map(h => (h.id === habitId ? { ...h, ...updates } : h)),
+    }));
   }, []);
 
   const toggleHabitCompletion = useCallback((habitId: string) => {
@@ -92,55 +117,141 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.habitLogs]);
 
   const getHabitStreak = useCallback((habitId: string) => {
-    const habitLogs = state.habitLogs
+    const relevantLogs = state.habitLogs
       .filter(l => l.habitId === habitId && (l.completed || l.skipped))
       .map(l => l.date)
-      .sort()
-      .reverse();
+      .sort();
 
-    if (habitLogs.length === 0) return 0;
+    if (relevantLogs.length === 0) return 0;
+
+    const today = getToday();
+    const completedDates = new Set(
+      state.habitLogs
+        .filter(l => l.habitId === habitId && l.completed)
+        .map(l => l.date),
+    );
 
     let streak = 0;
-    const today = getToday();
-    let checkDate = new Date(today + 'T12:00:00');
+    let graceUsed = false;
 
-    if (!habitLogs.includes(today)) {
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
+    const cursor = new Date(today + 'T12:00:00');
 
+    // If today is not logged at all, treat it as a potential miss; we start from today
+    // and walk backwards applying the "don't miss twice" rule.
     while (true) {
-      const dateStr = checkDate.toISOString().split('T')[0];
-      if (habitLogs.includes(dateStr)) {
-        streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+      const dateStr = cursor.toISOString().split('T')[0];
+
+      if (completedDates.has(dateStr)) {
+        streak += 1;
       } else {
-        break;
+        if (!graceUsed) {
+          graceUsed = true;
+        } else {
+          break;
+        }
       }
+
+      cursor.setDate(cursor.getDate() - 1);
     }
 
     return streak;
   }, [state.habitLogs]);
 
+  const markMilestoneCelebrated = useCallback((habitId: string, milestone: number) => {
+    setState(prev => {
+      const existing: MilestoneCelebration[] = prev.milestoneCelebrations ?? [];
+      if (existing.some(m => m.habitId === habitId && m.milestone === milestone)) {
+        return prev;
+      }
+      return {
+        ...prev,
+        milestoneCelebrations: [...existing, { habitId, milestone }],
+      };
+    });
+  }, []);
+
   const resetApp = useCallback(() => {
     setState({
       onboardingComplete: false,
       identityStatement: '',
+      soundEnabled: true,
       habits: [],
       habitLogs: [],
     });
   }, []);
 
+  // Smart reminder & "Don't miss twice" browser notifications
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof Notification === 'undefined') return;
+
+    const ensurePermission = async () => {
+      if (Notification.permission === 'default' && !notificationPermissionRequestedRef.current) {
+        notificationPermissionRequestedRef.current = true;
+        try {
+          await Notification.requestPermission();
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    const interval = window.setInterval(async () => {
+      const now = new Date();
+      const timeStr = now.toTimeString().slice(0, 5); // HH:MM
+      const todayStr = getToday();
+
+      if (Notification.permission === 'default') {
+        await ensurePermission();
+      }
+      if (Notification.permission !== 'granted') return;
+
+      const activeHabits = state.habits.filter(h => !h.archived);
+
+      for (const habit of activeHabits) {
+        const reminderTime = habit.reminderTime ?? habit.timeOfDay;
+
+        // Smart reminder at preferred time
+        if (habit.smartReminderEnabled && reminderTime && timeStr === reminderTime) {
+          const lastSent = reminderSentRef.current[habit.id];
+          if (lastSent !== todayStr && !isHabitCompletedToday(habit.id)) {
+            new Notification('Time for your habit', {
+              body: `“${habit.title}” is waiting. Take 2 minutes now.`,
+            });
+            reminderSentRef.current[habit.id] = todayStr;
+          }
+        }
+
+        // 9pm "Don't miss twice" notification if still incomplete
+        if (timeStr === '21:00') {
+          const lastSent = dontMissTwiceSentRef.current[habit.id];
+          if (lastSent !== todayStr && !isHabitCompletedToday(habit.id)) {
+            new Notification("Don't miss twice", {
+              body: `You haven't completed “${habit.title}” today. A tiny action keeps your streak alive.`,
+            });
+            dontMissTwiceSentRef.current[habit.id] = todayStr;
+          }
+        }
+      }
+    }, 60 * 1000); // check every minute
+
+    return () => window.clearInterval(interval);
+  }, [state.habits, isHabitCompletedToday]);
+
   return (
     <AppContext.Provider value={{
       state,
       completeOnboarding,
+      updateIdentityStatement,
+      setSoundEnabled,
       addHabit,
+      updateHabit,
       toggleHabitCompletion,
       skipHabit,
       deleteHabit,
       isHabitCompletedToday,
       isHabitSkippedToday,
       getHabitStreak,
+      markMilestoneCelebrated,
       resetApp,
     }}>
       {children}

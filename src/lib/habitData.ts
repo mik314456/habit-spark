@@ -1,4 +1,4 @@
-export type HabitColor = 'amber' | 'sage' | 'coral' | 'sky' | 'violet' | 'rose';
+export type HabitColor = 'coral' | 'sage' | 'sky' | 'amber' | 'violet' | 'rose' | 'teal' | 'slate';
 
 export interface HabitTemplate {
   id: string;
@@ -20,8 +20,11 @@ export interface Habit {
   color: HabitColor;
   timeOfDay: string;
   location: string;
+  why?: string;
   createdAt: string;
   archived: boolean;
+  smartReminderEnabled?: boolean;
+  reminderTime?: string;
 }
 
 export interface HabitLog {
@@ -33,11 +36,18 @@ export interface HabitLog {
   completedAt: string;
 }
 
+export interface MilestoneCelebration {
+  habitId: string;
+  milestone: number;
+}
+
 export interface AppState {
   onboardingComplete: boolean;
   identityStatement: string;
+  soundEnabled: boolean;
   habits: Habit[];
   habitLogs: HabitLog[];
+  milestoneCelebrations: MilestoneCelebration[];
 }
 
 export const HABIT_TEMPLATES: HabitTemplate[] = [
@@ -62,6 +72,8 @@ export const HABIT_COLOR_MAP: Record<HabitColor, string> = {
   sky: 'var(--habit-sky)',
   violet: 'var(--habit-violet)',
   rose: 'var(--habit-rose)',
+  teal: 'var(--habit-teal)',
+  slate: 'var(--habit-slate)',
 };
 
 const STORAGE_KEY = 'atoms-app-state';
@@ -69,13 +81,32 @@ const STORAGE_KEY = 'atoms-app-state';
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+    if (raw) {
+      const parsed = JSON.parse(raw) as AppState;
+      return {
+        onboardingComplete: parsed.onboardingComplete ?? false,
+        identityStatement: parsed.identityStatement ?? '',
+        soundEnabled: parsed.soundEnabled ?? true,
+        habits: (parsed.habits ?? []).map(habit => ({
+          ...habit,
+          smartReminderEnabled: habit.smartReminderEnabled ?? false,
+          reminderTime: habit.reminderTime ?? habit.timeOfDay ?? '09:00',
+          why: habit.why ?? '',
+        })),
+        habitLogs: parsed.habitLogs ?? [],
+        milestoneCelebrations: parsed.milestoneCelebrations ?? [],
+      };
+    }
+  } catch {
+    // ignore malformed storage
+  }
   return {
     onboardingComplete: false,
     identityStatement: '',
+    soundEnabled: true,
     habits: [],
     habitLogs: [],
+    milestoneCelebrations: [],
   };
 }
 
@@ -98,7 +129,7 @@ export function getStreak(habitId: string, logs: HabitLog[]): number {
 
   let streak = 0;
   const today = getToday();
-  let checkDate = new Date(today);
+  const checkDate = new Date(today);
 
   // If today is not logged, start from yesterday
   if (!habitLogs.includes(today)) {

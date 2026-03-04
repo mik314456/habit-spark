@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { Habit, HabitColor } from '@/lib/habitData';
+import { motion } from 'framer-motion';
+import { Flame } from 'lucide-react';
+import { Habit, HabitColor, HABIT_COLOR_MAP } from '@/lib/habitData';
+import { getHabitIconByTitle } from '@/lib/habitIcons';
+import { playChime, playTick } from '@/lib/feedback';
 
 const colorClasses: Record<HabitColor, { bg: string; border: string; fill: string; tint: string }> = {
   amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10' },
@@ -9,6 +12,8 @@ const colorClasses: Record<HabitColor, { bg: string; border: string; fill: strin
   sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10' },
   violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10' },
   rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10' },
+  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10' },
+  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10' },
 };
 
 interface HabitCardProps {
@@ -16,12 +21,24 @@ interface HabitCardProps {
   streak: number;
   completed: boolean;
   skipped: boolean;
+  soundEnabled: boolean;
   onComplete: () => void;
   onSkip: () => void;
   onDelete: () => void;
+  onOpenDetails: () => void;
 }
 
-export default function HabitCard({ habit, streak, completed, skipped, onComplete, onSkip, onDelete }: HabitCardProps) {
+export default function HabitCard({
+  habit,
+  streak,
+  completed,
+  skipped,
+  soundEnabled,
+  onComplete,
+  onSkip,
+  onDelete,
+  onOpenDetails,
+}: HabitCardProps) {
   const [holdProgress, setHoldProgress] = useState(0);
   const [isHolding, setIsHolding] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
@@ -32,9 +49,13 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
   const [swipeX, setSwipeX] = useState(0);
 
   const colors = colorClasses[habit.color];
+  const HabitIcon = getHabitIconByTitle(habit.title);
 
   const startHold = useCallback(() => {
     if (skipped) return;
+    if (!completed && soundEnabled) {
+      void playTick();
+    }
     setIsHolding(true);
     startTime.current = Date.now();
 
@@ -48,6 +69,9 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
       if (progress >= 1) {
         // Complete!
         if (!completed) {
+          if (soundEnabled) {
+            void playChime();
+          }
           setShowParticles(true);
           setJustCompleted(true);
           setTimeout(() => setShowParticles(false), 800);
@@ -63,7 +87,7 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
     };
 
     animFrame.current = requestAnimationFrame(animate);
-  }, [completed, skipped, onComplete]);
+  }, [completed, skipped, onComplete, soundEnabled]);
 
   const endHold = useCallback(() => {
     if (!isHolding) return;
@@ -122,20 +146,24 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
             setSwipeX(0);
           }
         }}
-        onPointerDown={startHold}
-        onPointerUp={endHold}
-        onPointerLeave={endHold}
       >
-        {/* Icon */}
-        <span className="text-2xl flex-shrink-0">{habit.icon}</span>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <p className={`font-medium text-sm ${completed ? 'line-through opacity-60' : ''} ${skipped ? 'opacity-50' : ''}`}>
-            {habit.title}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">{habit.action}</p>
-        </div>
+        {/* Icon + content (tap to open details) */}
+        <button
+          type="button"
+          onClick={onOpenDetails}
+          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+        >
+          <HabitIcon
+            className="w-6 h-6 flex-shrink-0"
+            style={{ color: `hsl(${HABIT_COLOR_MAP[habit.color]})` }}
+          />
+          <div className="flex-1 min-w-0">
+            <p className={`font-medium text-sm ${completed ? 'line-through opacity-60' : ''} ${skipped ? 'opacity-50' : ''}`}>
+              {habit.title}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">{habit.action}</p>
+          </div>
+        </button>
 
         {/* Streak badge */}
         {streak > 0 && (
@@ -146,12 +174,18 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
             animate={justCompleted ? { scale: [1, 1.3, 1] } : {}}
             transition={{ duration: 0.2 }}
           >
-            🔥 {streak}
+            <Flame className="w-3.5 h-3.5" />
+            {streak}
           </motion.div>
         )}
 
-        {/* Completion circle */}
-        <div className="relative w-11 h-11 flex-shrink-0">
+        {/* Completion circle (long-press interaction) */}
+        <div
+          className="relative w-11 h-11 flex-shrink-0"
+          onPointerDown={startHold}
+          onPointerUp={endHold}
+          onPointerLeave={endHold}
+        >
           <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
             <circle cx="22" cy="22" r="18" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
             <circle
@@ -175,7 +209,13 @@ export default function HabitCard({ habit, streak, completed, skipped, onComplet
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8L7 12L13 4" stroke="hsl(var(--habit-amber))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M3 8L7 12L13 4"
+                  stroke={`hsl(${HABIT_COLOR_MAP[habit.color]})`}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </motion.div>
           )}

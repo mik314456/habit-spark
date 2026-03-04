@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
-import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate, HabitColor } from '@/lib/habitData';
+import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate } from '@/lib/habitData';
+import { getHabitIconByTitle } from '@/lib/habitIcons';
 import welcomeIllustration from '@/assets/welcome-illustration.png';
 
 const slideVariants = {
@@ -47,6 +48,9 @@ export default function Onboarding() {
         color: selectedTemplate.color,
         timeOfDay: habitTime,
         location: habitLocation || selectedTemplate.defaultLocation,
+        why: identity.trim() ? `To become ${identity.trim()}` : '',
+        smartReminderEnabled: true,
+        reminderTime: habitTime,
       });
     }
     completeOnboarding(identity);
@@ -110,7 +114,7 @@ export default function Onboarding() {
     </motion.div>,
 
     // Screen 2: Habit Picker
-    <motion.div key="picker" className="flex flex-col h-full px-6 pt-12">
+    <motion.div key="picker" className="flex h-screen flex-col px-6 pt-12">
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">← Back</button>
       <h1 className="text-2xl mb-2">Pick your first habit</h1>
       <p className="text-muted-foreground mb-6 text-sm">Start with one. You can always add more later.</p>
@@ -137,7 +141,10 @@ export default function Onboarding() {
                         : 'border-transparent bg-card shadow-card hover:border-border'
                     }`}
                   >
-                    <span className="text-2xl">{t.icon}</span>
+                    {(() => {
+                      const Icon = getHabitIconByTitle(t.title);
+                      return <Icon className="w-6 h-6 text-muted-foreground" />;
+                    })()}
                     <span className="text-sm font-medium">{t.title}</span>
                   </button>
                 ))}
@@ -166,7 +173,12 @@ export default function Onboarding() {
         "{selectedTemplate?.suggestion}" → "{selectedTemplate?.smallVersion}"
       </p>
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">{selectedTemplate?.icon}</span>
+        {selectedTemplate && (
+          (() => {
+            const Icon = getHabitIconByTitle(selectedTemplate.title);
+            return <Icon className="w-7 h-7 text-muted-foreground" />;
+          })()
+        )}
         <span className="font-display text-xl">{selectedTemplate?.title}</span>
       </div>
       <input

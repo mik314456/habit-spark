@@ -3,24 +3,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate } from '@/lib/habitData';
+import { getHabitIconByTitle } from '@/lib/habitIcons';
 
 interface AddHabitModalProps {
   onClose: () => void;
 }
 
 export default function AddHabitModal({ onClose }: AddHabitModalProps) {
-  const { addHabit } = useApp();
+  const { addHabit, state } = useApp();
   const [step, setStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<HabitTemplate | null>(null);
   const [habitAction, setHabitAction] = useState('');
   const [habitTime, setHabitTime] = useState('07:00');
   const [habitLocation, setHabitLocation] = useState('');
+  const [habitWhy, setHabitWhy] = useState('');
 
   const selectTemplate = (t: HabitTemplate) => {
     setSelectedTemplate(t);
     setHabitAction(t.smallVersion);
     setHabitTime(t.defaultTime);
     setHabitLocation(t.defaultLocation);
+    const identity = state.identityStatement?.trim();
+    setHabitWhy(identity ? `To become ${identity}` : '');
     setStep(1);
   };
 
@@ -33,6 +37,9 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
       color: selectedTemplate.color,
       timeOfDay: habitTime,
       location: habitLocation,
+      why: habitWhy,
+      smartReminderEnabled: true,
+      reminderTime: habitTime,
     });
     onClose();
   };
@@ -74,7 +81,10 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
                         onClick={() => selectTemplate(t)}
                         className="flex items-center gap-3 p-3 rounded-xl bg-background hover:bg-muted transition-colors text-left"
                       >
-                        <span className="text-xl">{t.icon}</span>
+                        {(() => {
+                          const Icon = getHabitIconByTitle(t.title);
+                          return <Icon className="w-5 h-5 text-muted-foreground" />;
+                        })()}
                         <span className="text-sm font-medium">{t.title}</span>
                       </button>
                     ))}
@@ -119,6 +129,17 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
                   className="w-full p-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block font-body">Why</label>
+              <input
+                type="text"
+                value={habitWhy}
+                onChange={e => setHabitWhy(e.target.value)}
+                placeholder={state.identityStatement?.trim() ? `e.g. To become ${state.identityStatement.trim()}` : 'e.g. To feel healthier'}
+                className="w-full p-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
             </div>
 
             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">

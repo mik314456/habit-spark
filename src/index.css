@@ -43,6 +43,8 @@
     --habit-sky: 200 75% 55%;
     --habit-violet: 265 60% 60%;
     --habit-rose: 340 70% 60%;
+    --habit-teal: 175 65% 45%;
+    --habit-slate: 215 20% 55%;
 
     /* Custom */
     --gradient-warm: linear-gradient(135deg, hsl(25 92% 56%), hsl(15 85% 62%));
@@ -58,6 +60,51 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 6%; /* #0f0f0f */
+    --foreground: 0 0% 96%; /* #f5f5f5 */
+
+    --card: 0 0% 10%; /* #1a1a1a */
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 25 92% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 15 85% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 25 92% 56%;
+
+    /* Keep habit tokens consistent across themes */
+    --gradient-warm: linear-gradient(135deg, hsl(25 92% 56%), hsl(15 85% 62%));
+    --gradient-sage: linear-gradient(135deg, hsl(150 35% 50%), hsl(170 40% 55%));
+    --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.45);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.6);
+
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 0 0% 96%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 25 92% 56%;
   }
 }
 

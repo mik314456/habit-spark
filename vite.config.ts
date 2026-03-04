@@ -11,6 +11,14 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api/anthropic": {
+        target: "https://api.anthropic.com",
+        changeOrigin: true,
+        secure: true,
+        rewrite: (p) => p.replace(/^\/api\/anthropic/, ""),
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

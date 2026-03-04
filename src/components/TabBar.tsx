@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Sun, BarChart2, Sparkles, Settings as SettingsIcon } from 'lucide-react';
 
 const tabs = [
-  { path: '/today', icon: '☀️', label: 'Today' },
-  { path: '/progress', icon: '📊', label: 'Progress' },
-  { path: '/learn', icon: '📚', label: 'Learn' },
-  { path: '/settings', icon: '⚙️', label: 'Settings' },
+  { path: '/today', Icon: Sun, label: 'Today' },
+  { path: '/progress', Icon: BarChart2, label: 'Progress' },
+  { path: '/coach', Icon: Sparkles, label: 'Coach' },
+  { path: '/settings', Icon: SettingsIcon, label: 'Settings' },
 ];
 
 export default function TabBar() {
@@ -29,7 +30,7 @@ export default function TabBar() {
                   className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"
                 />
               )}
-              <span className="text-lg">{tab.icon}</span>
+              <tab.Icon className={`w-5 h-5 ${active ? 'text-foreground' : 'text-muted-foreground'}`} />
               <span className={`text-[10px] font-medium ${active ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {tab.label}
               </span>

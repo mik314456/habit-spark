@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { BarChart2, Flame } from 'lucide-react';
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
 import { useApp } from '@/contexts/AppContext';
 import TabBar from '@/components/TabBar';
-import { motion } from 'framer-motion';
-import { useMemo } from 'react';
-import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
 
 export default function Progress() {
   const { state, getHabitStreak } = useApp();
@@ -63,7 +64,9 @@ export default function Progress() {
 
         {activeHabits.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <p className="text-4xl mb-4">📊</p>
+            <p className="mb-4 flex justify-center">
+              <BarChart2 className="w-10 h-10" />
+            </p>
             <p>Complete some habits to see your progress</p>
           </div>
         ) : (
@@ -74,8 +77,11 @@ export default function Progress() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
-              <p className="text-5xl font-display">{currentStreak}</p>
-              <p className="text-sm opacity-80 mt-1">🔥 day streak</p>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Flame className="w-6 h-6" />
+                <p className="text-5xl font-display">{currentStreak}</p>
+              </div>
+              <p className="text-sm opacity-80 mt-1">day streak</p>
             </motion.div>
 
             {/* Weekly strip */}
@@ -153,7 +159,9 @@ export default function Progress() {
                 const rate = completionRate(7); // simplified
                 return (
                   <div key={habit.id} className="flex items-center gap-3 p-4 rounded-2xl bg-card shadow-card">
-                    <span className="text-xl">{habit.icon}</span>
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-xs font-semibold">
+                      {habit.title.charAt(0)}
+                    </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{habit.title}</p>
                       <p className="text-xs text-muted-foreground">{streak} day streak</p>

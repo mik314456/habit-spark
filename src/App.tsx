@@ -4,10 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "@/contexts/AppContext";
+import { ThemeProvider } from "@/components/theme-provider";
 import Onboarding from "./pages/Onboarding";
 import Today from "./pages/Today";
 import Progress from "./pages/Progress";
-import Learn from "./pages/Learn";
+import Coach from "./pages/Coach";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -29,7 +30,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/today" replace />} />
       <Route path="/today" element={<Today />} />
       <Route path="/progress" element={<Progress />} />
-      <Route path="/learn" element={<Learn />} />
+      <Route path="/coach" element={<Coach />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -38,15 +39,17 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AppProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AppProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AppProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AppProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

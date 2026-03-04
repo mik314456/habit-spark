@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -54,6 +55,8 @@ export default {
           sky: "hsl(var(--habit-sky))",
           violet: "hsl(var(--habit-violet))",
           rose: "hsl(var(--habit-rose))",
+          teal: "hsl(var(--habit-teal))",
+          slate: "hsl(var(--habit-slate))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -98,5 +101,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
