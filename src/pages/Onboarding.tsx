@@ -110,11 +110,11 @@ export default function Onboarding() {
     </motion.div>,
 
     // Screen 2: Habit Picker
-    <motion.div key="picker" className="flex flex-col h-full px-6 py-12 overflow-hidden relative">
+    <motion.div key="picker" className="flex flex-col h-full px-6 pt-12">
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">← Back</button>
       <h1 className="text-2xl mb-2">Pick your first habit</h1>
       <p className="text-muted-foreground mb-6 text-sm">Start with one. You can always add more later.</p>
-      <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-24">
+      <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-4">
         {HABIT_CATEGORIES.map(cat => {
           const templates = HABIT_TEMPLATES.filter(t => t.category === cat);
           if (templates.length === 0) return null;
@@ -146,7 +146,7 @@ export default function Onboarding() {
           );
         })}
       </div>
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent pt-12">
+      <div className="flex-shrink-0 py-4 bg-background">
         <button
           onClick={next}
           disabled={!selectedTemplate}
