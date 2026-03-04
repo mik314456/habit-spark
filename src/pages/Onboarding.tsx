@@ -110,7 +110,7 @@ export default function Onboarding() {
     </motion.div>,
 
     // Screen 2: Habit Picker
-    <motion.div key="picker" className="flex flex-col h-full px-6 py-12 overflow-hidden">
+    <motion.div key="picker" className="flex flex-col h-full px-6 py-12 overflow-hidden relative">
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">← Back</button>
       <h1 className="text-2xl mb-2">Pick your first habit</h1>
       <p className="text-muted-foreground mb-6 text-sm">Start with one. You can always add more later.</p>
