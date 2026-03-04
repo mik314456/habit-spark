@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { eachDayOfInterval, endOfMonth, format, getDay, startOfMonth, subDays, isSameDay } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Trash2, Save } from 'lucide-react';
-import { Habit } from '@/lib/habitData';
+import { X, Trash2, Save, Flame } from 'lucide-react';
+import { Habit, HABIT_COLOR_MAP } from '@/lib/habitData';
 import { useApp } from '@/contexts/AppContext';
 
 interface HabitDetailSheetProps {
@@ -122,77 +122,81 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-md mx-auto bg-card rounded-t-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border"
+            className="w-full max-w-md mx-auto bg-card rounded-t-[24px] max-h-[92vh] overflow-y-auto shadow-2xl border border-border"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 24, stiffness: 260 }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border">
-              <div className="h-1 w-10 rounded-full bg-border/80 mx-auto absolute left-1/2 -translate-x-1/2 top-3" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground mb-1 font-body">Habit</p>
-                <p className="font-display text-lg truncate">{habit.title}</p>
-              </div>
-              <button onClick={onClose} className="ml-3 text-muted-foreground hover:text-foreground">
+            {/* Handle + close */}
+            <div className="relative px-5 pt-4 pb-2">
+              <div className="h-1 w-10 rounded-full bg-border/80 mx-auto mb-3" />
+              <button
+                onClick={onClose}
+                className="absolute right-5 top-4 text-muted-foreground hover:text-foreground"
+              >
                 <X size={18} />
               </button>
+              <h2 className="font-display text-xl mb-1 pr-8 truncate">{habit.title}</h2>
             </div>
 
-            <div className="px-5 py-4 space-y-5">
-              {/* Streaks + 30-day ring */}
-              <div className="flex items-center gap-4">
-                <div className="flex-1 space-y-1">
-                  <p className="text-xs text-muted-foreground font-body">Current streak</p>
-                  <p className="text-2xl font-display flex items-center gap-1.5">
-                    <span>🔥</span>
-                    <span>{currentStreak}</span>
-                    <span className="text-xs text-muted-foreground font-body uppercase tracking-[0.16em]">
-                      days
-                    </span>
+            <div className="px-5 pb-6 space-y-6">
+              {/* Top stats: streak + 30-day rate */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-border/80 bg-background/40 px-3 py-3 space-y-1.5">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-body">
+                    Streak
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Best streak <span className="font-semibold text-foreground">{bestStreak}</span> days
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-primary" />
+                    <span className="text-2xl font-display">{currentStreak}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    day streak · best {bestStreak}
                   </p>
                 </div>
 
-                <div className="w-24 h-24 relative">
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r={radius}
-                      fill="none"
-                      stroke="hsl(var(--border))"
-                      strokeWidth="8"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r={radius}
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="8"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={offset}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-sm font-semibold">{clampedRate}%</p>
-                    <p className="text-[10px] text-muted-foreground">Last 30 days</p>
+                <div className="rounded-2xl border border-border/80 bg-background/40 px-3 py-3 flex flex-col items-center justify-center">
+                  <div className="relative w-16 h-16 mb-1">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="none"
+                        stroke="hsl(var(--border))"
+                        strokeWidth="8"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="8"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-sm font-semibold">{clampedRate}%</span>
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">Last 30 days</p>
                 </div>
               </div>
 
               {/* Calendar */}
-              <div className="p-4 rounded-2xl bg-muted/40">
-                <p className="text-xs text-muted-foreground mb-2 font-body">History</p>
+              <div className="rounded-2xl border border-border/80 bg-background/40 px-4 py-4">
+                <p className="text-[11px] text-muted-foreground mb-2 font-body uppercase tracking-[0.16em]">
+                  History
+                </p>
                 <p className="text-sm font-medium mb-3">{format(today, 'MMMM yyyy')}</p>
-                <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                <div className="grid grid-cols-7 gap-2 text-center text-[11px]">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                    <span key={i} className="text-[10px] text-muted-foreground font-medium py-0.5">
+                    <span key={i} className="text-[10px] text-muted-foreground font-medium">
                       {d}
                     </span>
                   ))}
@@ -202,93 +206,92 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   {calendarDays.map(day => {
                     const status = statusForDate(day);
                     const isToday = isSameDay(day, today);
-                    const baseClasses =
-                      status === 'completed'
-                        ? 'bg-primary text-primary-foreground'
-                        : status === 'skipped'
-                        ? 'bg-muted text-muted-foreground'
-                        : 'bg-background text-muted-foreground border border-border/60';
+                    const baseColor = HABIT_COLOR_MAP[habit.color];
+                    let style: React.CSSProperties = {};
+                    let className =
+                      'w-7 h-7 flex items-center justify-center rounded-full mx-auto';
+
+                    if (status === 'completed') {
+                      style.backgroundColor = `hsl(${baseColor})`;
+                      className += ' text-primary-foreground';
+                    } else if (status === 'skipped') {
+                      style.borderColor = `hsl(${baseColor})`;
+                      style.borderWidth = 1;
+                      className += ' text-muted-foreground border';
+                    } else {
+                      className += ' text-muted-foreground';
+                    }
+
+                    if (isToday) {
+                      className += ' ring-1 ring-white';
+                    }
+
                     return (
-                      <div
-                        key={format(day, 'yyyy-MM-dd')}
-                        className={`aspect-square rounded-lg flex items-center justify-center text-[11px] ${baseClasses} ${
-                          isToday ? 'ring-1 ring-primary' : ''
-                        }`}
-                      >
-                        {format(day, 'd')}
+                      <div key={format(day, 'yyyy-MM-dd')} className="flex items-center justify-center">
+                        <div className={className} style={style}>
+                          {format(day, 'd')}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <span className="w-3 h-3 rounded bg-primary" /> Completed
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <span className="w-3 h-3 rounded bg-muted" /> Skipped
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <span className="w-3 h-3 rounded border border-border/60 bg-background" /> No log
-                  </span>
-                </div>
               </div>
 
               {/* Edit form */}
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground font-body">Edit habit</p>
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground font-body">Name</label>
+                  <label className="text-[11px] text-muted-foreground font-body">Name</label>
                   <input
                     type="text"
-                    className="w-full rounded-xl bg-background border border-border px-3 py-2 text-sm"
+                    className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-xs text-muted-foreground font-body">Time</label>
+                    <label className="text-[11px] text-muted-foreground font-body">Time</label>
                     <input
                       type="time"
-                      className="w-full rounded-xl bg-background border border-border px-3 py-2 text-sm"
+                      className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       value={timeOfDay}
                       onChange={e => setTimeOfDay(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs text-muted-foreground font-body">Location</label>
+                    <label className="text-[11px] text-muted-foreground font-body">Location</label>
                     <input
                       type="text"
-                      className="w-full rounded-xl bg-background border border-border px-3 py-2 text-sm"
+                      className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       value={location}
                       onChange={e => setLocation(e.target.value)}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground font-body">Why</label>
+                  <label className="text-[11px] text-muted-foreground font-body">Why</label>
                   <input
                     type="text"
-                    className="w-full rounded-xl bg-background border border-border px-3 py-2 text-sm"
+                    className="w-full rounded-xl bg-background border border-border/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     value={why}
                     onChange={e => setWhy(e.target.value)}
                     placeholder="e.g. To become my best self"
                   />
                 </div>
-                <div className="flex gap-3 pt-1">
+
+                <div className="flex items-center justify-between pt-2">
                   <button
                     onClick={handleDelete}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-destructive/10 text-destructive text-sm font-medium"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] text-muted-foreground border border-border/60 hover:bg-muted/40"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                     Delete
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl gradient-warm text-primary-foreground text-sm font-semibold shadow-elevated"
+                    className="flex-1 ml-3 py-2.5 rounded-2xl gradient-warm text-primary-foreground text-sm font-semibold shadow-elevated"
                   >
-                    <Save size={16} />
-                    Save
+                    Save changes
                   </button>
                 </div>
               </div>

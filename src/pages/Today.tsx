@@ -137,7 +137,6 @@ export default function Today() {
                 streak={getHabitStreak(habit.id)}
                 completed={isHabitCompletedToday(habit.id)}
                 skipped={isHabitSkippedToday(habit.id)}
-                soundEnabled={state.soundEnabled}
                 onComplete={() => toggleHabitCompletion(habit.id)}
                 onSkip={() => skipHabit(habit.id)}
                 onDelete={() => deleteHabit(habit.id)}
