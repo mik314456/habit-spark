@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { format, subDays } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Plus, Sprout } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Plus, Sprout } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import HabitCard from '@/components/HabitCard';
 import TabBar from '@/components/TabBar';
@@ -117,16 +117,25 @@ export default function Today() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase font-body">
+          <p className="text-[11px] text-muted-foreground/80 tracking-[0.12em] uppercase font-body">
             {format(now, 'EEEE, MMMM d')}
           </p>
           <h1 className="mt-2 font-body font-semibold text-[2.6rem] leading-tight text-foreground">
             {greeting}
           </h1>
           {activeHabits.length > 0 && (
-            <p className="text-muted-foreground text-sm mt-3 font-body">
-              {completedCount} of {activeHabits.length} habits done today
-            </p>
+            completedCount === activeHabits.length ? (
+              <div className="flex items-center gap-2 mt-3">
+                <CheckCircle2 className="w-4 h-4 text-[color:var(--accent-color)]" />
+                <p className="text-sm font-body text-[color:var(--accent-color)]">
+                  All done. You showed up today.
+                </p>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm mt-3 font-body">
+                {completedCount} of {activeHabits.length} habits done today
+              </p>
+            )
           )}
         </motion.div>
 

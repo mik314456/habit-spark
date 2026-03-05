@@ -1,9 +1,53 @@
-import { useMemo } from 'react';
+import { useMemo, type ComponentType, type CSSProperties } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, Flame } from 'lucide-react';
-import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from 'date-fns';
+import {
+  BarChart2,
+  Flame,
+  Dumbbell,
+  Brain,
+  BookOpen,
+  Droplets,
+  Heart,
+  Moon,
+  Pencil,
+  Music,
+  Phone,
+  Apple,
+  Bike,
+} from 'lucide-react';
+import { format, subDays, isSameDay } from 'date-fns';
+import {
+  ComposedChart,
+  Area,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceDot,
+  ReferenceLine,
+  CartesianGrid,
+} from 'recharts';
 import { useApp } from '@/contexts/AppContext';
+import { Habit, HABIT_COLOR_MAP } from '@/lib/habitData';
+import { getHabitIconByTitle } from '@/lib/habitIcons';
 import TabBar from '@/components/TabBar';
+
+const GRAPH_DAYS = 21;
+
+const explicitIconMap: Record<string, ComponentType<{ className?: string; style?: CSSProperties }>> = {
+  dumbbell: Dumbbell,
+  brain: Brain,
+  book: BookOpen,
+  droplets: Droplets,
+  heart: Heart,
+  moon: Moon,
+  pencil: Pencil,
+  music: Music,
+  phone: Phone,
+  apple: Apple,
+  bike: Bike,
+};
 
 export default function Progress() {
   const { state, getHabitStreak } = useApp();
@@ -64,11 +108,45 @@ export default function Progress() {
     return typeof n === 'number' && Number.isFinite(n) ? n : 0;
   })();
 
-  // Calendar
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
-  const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startPadding = getDay(monthStart);
+  const totalHabitsCount = activeHabits.length;
+
+  const perHabitRate30 = (habitId: string): number => {
+    const logs = state.habitLogs ?? [];
+    let completedDays = 0;
+    const windowDays = 30;
+    for (let i = 0; i < windowDays; i++) {
+      const dateStr = format(subDays(today, i), 'yyyy-MM-dd');
+      const hasCompleted = logs.some(
+        l => l.habitId === habitId && l.date === dateStr && l.completed,
+      );
+      if (hasCompleted) completedDays += 1;
+    }
+    if (windowDays === 0) return 0;
+    return Math.round((completedDays / windowDays) * 100);
+  };
+
+  // Graph data: last N days — rate %, count, and day metadata
+  const graphData = useMemo(() => {
+    return Array.from({ length: GRAPH_DAYS }, (_, i) => {
+      const date = subDays(today, GRAPH_DAYS - 1 - i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const totalHabits = activeHabits.length;
+      const completed = (state.habitLogs ?? []).filter(
+        l => l.date === dateStr && l.completed
+      ).length;
+      const rate = totalHabits > 0 ? Math.round((completed / totalHabits) * 100) : 0;
+      return {
+        dateStr,
+        label: format(date, 'EEE, MMM d'),
+        shortLabel: format(date, 'd'),
+        weekDay: format(date, 'EEE'),
+        rate,
+        count: completed,
+        total: totalHabits,
+        isToday: isSameDay(date, today),
+      };
+    });
+  }, [activeHabits, state.habitLogs, today]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -88,22 +166,45 @@ export default function Progress() {
           <>
             {/* Streak hero */}
             <motion.div
-              className="text-center p-8 rounded-3xl mb-6 shadow-card border border-[color:var(--accent-color)]/30"
+              className="relative overflow-hidden rounded-3xl mb-6 shadow-card border border-[color:var(--accent-color)]/40 px-6 py-7"
               style={{
-                background: 'linear-gradient(135deg, #b85a2a 0%, #c96a3a 40%, #d4845a 100%)',
+                background:
+                  'linear-gradient(135deg, #8a3a10 0%, #b85a2a 35%, #d87b3b 70%, #f0a15a 100%)',
               }}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 10, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Flame className="w-6 h-6 text-white" />
-                <p className="text-5xl font-body font-semibold text-white tabular-nums">
-                  {currentStreak}
-                </p>
+              {/* Flame watermark */}
+              <Flame
+                className="absolute -right-6 -top-4 w-28 h-28 text-black/10"
+                strokeWidth={1}
+              />
+
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex flex-col items-start">
+                  <p className="text-xs uppercase tracking-[0.16em] text-white/70 font-body mb-1">
+                    Current streak
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-6xl font-body font-semibold text-white tabular-nums leading-none">
+                      {currentStreak}
+                    </p>
+                    <span className="text-sm font-body text-white/80 mt-1">days</span>
+                  </div>
+                  <p className="text-sm mt-2 font-body text-white/90">
+                    day streak
+                  </p>
+                </div>
+                <div className="relative flex flex-col items-end justify-between h-full">
+                  <div className="px-3 py-1.5 rounded-full bg-black/15 border border-white/15 text-[11px] font-body text-white/90 backdrop-blur-sm">
+                    Keep the chain alive
+                  </div>
+                  <p className="mt-6 text-xs font-body text-white/80">
+                    Best: <span className="font-semibold">{bestStreak}</span> days
+                  </p>
+                </div>
               </div>
-              <p className="text-sm mt-1 font-body font-medium text-white/95">
-                day streak
-              </p>
             </motion.div>
 
             {/* Weekly strip — today stays orange; past dates use theme-aware colors for dark mode */}
@@ -151,64 +252,91 @@ export default function Progress() {
               </div>
             </div>
 
-            {/* Calendar */}
-            <div className="p-5 rounded-2xl bg-card shadow-card mb-6">
-              <h3 className="font-body font-semibold text-lg mb-4">{format(today, 'MMMM yyyy')}</h3>
-              <div className="grid grid-cols-7 gap-1 text-center">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                  <span key={i} className="text-[10px] text-muted-foreground font-medium font-body py-1">{d}</span>
-                ))}
-                {Array.from({ length: startPadding }).map((_, i) => (
-                  <div key={`pad-${i}`} />
-                ))}
-                {calendarDays.map(day => {
-                  const dateStr = format(day, 'yyyy-MM-dd');
-                  const totalHabits = activeHabits.length;
-                  const completedHabits = (state.habitLogs ?? []).filter(l => l.date === dateStr && l.completed).length;
-                  const ratio = totalHabits > 0 ? completedHabits / totalHabits : 0;
-                  const isToday = isSameDay(day, today);
+            {/* Per-habit rings — 30-day completion rate */}
+            <div className="space-y-3">
+              <h3 className="font-body font-semibold text-lg">By habit</h3>
+              <p className="text-xs text-muted-foreground font-body">
+                30-day completion, one ring per habit
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                {activeHabits.map((habit, index) => {
+                  const pct = perHabitRate30(habit.id);
+                  const radius = 54;
+                  const circumference = 2 * Math.PI * radius;
+                  const offset = circumference * (1 - pct / 100);
+                  const colorToken = HABIT_COLOR_MAP[habit.color];
+                  const strokeColor = `hsl(${colorToken})`;
+
+                  const explicitKey = habit.icon?.startsWith('lucide:')
+                    ? habit.icon.slice(7)
+                    : undefined;
+                  const ExplicitIcon = explicitKey ? explicitIconMap[explicitKey] : undefined;
+                  const HabitIcon = (ExplicitIcon ??
+                    getHabitIconByTitle(habit.title)) as ComponentType<{
+                    className?: string;
+                    style?: CSSProperties;
+                  }>;
 
                   return (
                     <div
-                      key={dateStr}
-                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-body tabular-nums transition-colors ${
-                        isToday
-                          ? 'ring-1 ring-primary ' + (ratio >= 1 ? 'bg-primary text-primary-foreground' : ratio > 0 ? 'bg-primary/20 text-foreground' : 'bg-muted text-foreground')
-                          : ratio >= 1
-                            ? 'bg-primary text-primary-foreground'
-                            : ratio > 0
-                              ? 'bg-primary/20 text-foreground'
-                              : 'bg-muted text-foreground'
-                      }`}
+                      key={habit.id}
+                      className="p-4 rounded-2xl bg-card shadow-card border border-border flex flex-col items-center"
                     >
-                      {format(day, 'd')}
+                      <div
+                        className="relative"
+                        style={{ width: 120, height: 120 }}
+                      >
+                        <motion.svg
+                          viewBox="0 0 120 120"
+                          className="absolute inset-0"
+                          initial={false}
+                        >
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="none"
+                            stroke={strokeColor}
+                            strokeOpacity={0.1}
+                            strokeWidth={12}
+                            strokeLinecap="round"
+                          />
+                          <motion.circle
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="none"
+                            stroke={strokeColor}
+                            strokeWidth={12}
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={circumference}
+                            transform="rotate(-90 60 60)"
+                            initial={{ strokeDashoffset: circumference }}
+                            animate={{ strokeDashoffset: offset }}
+                            transition={{
+                              duration: 1,
+                              delay: 0.04 * index,
+                              ease: 'easeOut',
+                            }}
+                          />
+                        </motion.svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <HabitIcon className="w-5 h-5" style={{ color: strokeColor }} />
+                            <span className="text-sm font-semibold font-body tabular-nums">
+                              {pct}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm font-medium font-body text-center line-clamp-2">
+                        {habit.title}
+                      </p>
                     </div>
                   );
                 })}
               </div>
-            </div>
-
-            {/* Per-habit breakdown */}
-            <div className="space-y-3">
-              <h3 className="font-body font-semibold text-lg">By Habit</h3>
-              {activeHabits.map(habit => {
-                const streak = getHabitStreak(habit.id);
-                const rate = completionRate(7); // simplified
-                return (
-                  <div key={habit.id} className="flex items-center gap-3 p-4 rounded-2xl bg-card shadow-card">
-                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-xs font-semibold font-body">
-                      {habit.title.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium font-body">{habit.title}</p>
-                      <p className="text-xs text-muted-foreground font-body">{streak} day streak</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-primary font-body">{rate}%</p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </>
         )}

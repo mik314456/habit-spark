@@ -23,14 +23,14 @@ const colorClasses: Record<
   HabitColor,
   { bg: string; border: string; fill: string; tint: string; tintSubtle: string; tintCompleted: string }
 > = {
-  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10', tintSubtle: 'bg-habit-amber/5', tintCompleted: 'bg-habit-amber/15' },
-  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10', tintSubtle: 'bg-habit-sage/5', tintCompleted: 'bg-habit-sage/15' },
-  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10', tintSubtle: 'bg-habit-coral/5', tintCompleted: 'bg-habit-coral/15' },
-  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10', tintSubtle: 'bg-habit-sky/5', tintCompleted: 'bg-habit-sky/15' },
-  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10', tintSubtle: 'bg-habit-violet/5', tintCompleted: 'bg-habit-violet/15' },
-  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10', tintSubtle: 'bg-habit-rose/5', tintCompleted: 'bg-habit-rose/15' },
-  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10', tintSubtle: 'bg-habit-teal/5', tintCompleted: 'bg-habit-teal/15' },
-  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10', tintSubtle: 'bg-habit-slate/5', tintCompleted: 'bg-habit-slate/15' },
+  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10', tintSubtle: 'bg-habit-amber/5', tintCompleted: 'bg-habit-amber/20' },
+  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10', tintSubtle: 'bg-habit-sage/5', tintCompleted: 'bg-habit-sage/20' },
+  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10', tintSubtle: 'bg-habit-coral/5', tintCompleted: 'bg-habit-coral/20' },
+  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10', tintSubtle: 'bg-habit-sky/5', tintCompleted: 'bg-habit-sky/20' },
+  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10', tintSubtle: 'bg-habit-violet/5', tintCompleted: 'bg-habit-violet/20' },
+  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10', tintSubtle: 'bg-habit-rose/5', tintCompleted: 'bg-habit-rose/20' },
+  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10', tintSubtle: 'bg-habit-teal/5', tintCompleted: 'bg-habit-teal/20' },
+  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10', tintSubtle: 'bg-habit-slate/5', tintCompleted: 'bg-habit-slate/20' },
 };
 
 interface HabitCardProps {
@@ -143,7 +143,13 @@ export default function HabitCard({
   const fillAmount = completed && !isHolding ? 1 : holdProgress;
 
   return (
-    <motion.div className="relative mb-3 animate-habit-card" layout>
+    <motion.div
+      className="relative mb-3 animate-habit-card"
+      layout
+      onPointerDown={() => {
+        if (actionMenuOpen) setActionMenuOpen(false);
+      }}
+    >
       <motion.div
         className={`relative rounded-[14px] border border-border border-l-[3px] shadow-card overflow-hidden select-none ${completed ? colors.tintCompleted : colors.tintSubtle} ${colors.border}`}
         onPointerDown={startHold}
@@ -259,7 +265,10 @@ export default function HabitCard({
       </motion.div>
 
       {actionMenuOpen && (
-        <div className="absolute right-4 top-2 z-40">
+        <div
+          className="absolute right-4 top-2 z-40"
+          onPointerDown={e => e.stopPropagation()}
+        >
           <div className="rounded-2xl bg-popover shadow-elevated border border-border py-1 text-xs">
             <button
               type="button"

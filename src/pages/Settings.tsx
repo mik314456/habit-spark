@@ -19,148 +19,195 @@ export default function Settings() {
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 pt-12">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl mb-8">Settings</h1>
+          <h1 className="text-2xl mb-1 font-body">Settings</h1>
+          <p className="text-sm text-muted-foreground mb-7 font-body">
+            Tune how the app looks, feels, and nudges you.
+          </p>
         </motion.div>
 
-        <div className="space-y-3">
+        <div className="space-y-6">
           {/* Appearance */}
-          <div className="p-4 rounded-2xl bg-card shadow-card">
-            <p className="text-xs text-muted-foreground mb-1 font-body">Appearance</p>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Dark mode</p>
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
-                  theme === 'dark' ? 'bg-primary' : 'bg-muted'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
-                    theme === 'dark' ? 'translate-x-5' : ''
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Identity */}
-          <div className="p-4 rounded-2xl bg-card shadow-card">
-            <p className="text-xs text-muted-foreground mb-1 font-body">Your Identity</p>
-            <input
-              type="text"
-              value={identityDraft}
-              onChange={e => setIdentityDraft(e.target.value.slice(0, 60))}
-              onBlur={() => updateIdentityStatement(identityDraft.trim())}
-              placeholder="e.g. A healthy person"
-              className="w-full mt-1 rounded-xl bg-background border border-border px-3 py-2 text-sm"
-            />
-            <p className="text-[11px] text-muted-foreground mt-2">
-              This shows on Today and pre-fills your habit “why”.
+          <section>
+            <p className="text-[11px] font-body uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              Appearance
             </p>
-          </div>
-
-          {/* Stats */}
-          <div className="p-4 rounded-2xl bg-card shadow-card">
-            <p className="text-xs text-muted-foreground mb-1 font-body">Active Habits</p>
-            <p className="font-medium">{activeHabits.length}</p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-card shadow-card">
-            <p className="text-xs text-muted-foreground mb-1 font-body">Total Completions</p>
-            <p className="font-medium">{state.habitLogs.filter(l => l.completed).length}</p>
-          </div>
-
-          {/* Habit reminders */}
-          {activeHabits.length > 0 && (
-            <div className="p-4 rounded-2xl bg-card shadow-card space-y-4">
+            <div className="rounded-2xl bg-card shadow-card border border-border/60 px-4 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1 font-body">Smart reminders</p>
-                  <p className="text-sm font-medium">Stay on track with gentle nudges</p>
+                  <p className="text-sm font-medium font-body">Dark mode</p>
+                  <p className="text-[11px] text-muted-foreground font-body">
+                    Switch between light and dark.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
+                    theme === 'dark' ? 'bg-primary' : 'bg-muted'
+                  }`}
+                  aria-label="Toggle dark mode"
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
+                      theme === 'dark' ? 'translate-x-5' : ''
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Identity */}
+          <section>
+            <p className="text-[11px] font-body uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              Identity
+            </p>
+            <div className="rounded-2xl bg-card shadow-card border border-border/60 px-4 py-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium font-body">Who you&apos;re becoming</p>
+                <p className="text-[11px] text-muted-foreground font-body">
+                  Shows on Today and pre-fills your habit &ldquo;why&rdquo; text.
+                </p>
+              </div>
+              <input
+                type="text"
+                value={identityDraft}
+                onChange={e => setIdentityDraft(e.target.value.slice(0, 60))}
+                onBlur={() => updateIdentityStatement(identityDraft.trim())}
+                placeholder="e.g. A healthy person"
+                className="w-full rounded-xl bg-background border border-border px-3 py-2 text-sm font-body"
+              />
+            </div>
+          </section>
+
+          {/* Stats */}
+          <section>
+            <p className="text-[11px] font-body uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              Stats
+            </p>
+            <div className="rounded-2xl bg-card shadow-card border border-border/60 px-4 py-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-background border border-border/70">
+                  <p className="text-[11px] text-muted-foreground font-body mb-1">Active habits</p>
+                  <p className="text-2xl font-body font-semibold tabular-nums">
+                    {activeHabits.length}
+                  </p>
+                </div>
+                <div className="p-3 rounded-2xl bg-background border border-border/70">
+                  <p className="text-[11px] text-muted-foreground font-body mb-1">
+                    Total completions
+                  </p>
+                  <p className="text-2xl font-body font-semibold tabular-nums">
+                    {state.habitLogs.filter(l => l.completed).length}
+                  </p>
                 </div>
               </div>
-              <div className="space-y-3">
-                {activeHabits.map(habit => (
-                  <div
-                    key={habit.id}
-                    className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-b-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      {(() => {
-                        const Icon = getHabitIconByTitle(habit.title);
-                        return <Icon className="w-5 h-5 text-muted-foreground" />;
-                      })()}
-                      <div>
-                        <p className="text-sm font-medium">{habit.title}</p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {habit.smartReminderEnabled ? 'Smart reminders on' : 'Smart reminders off'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {habit.smartReminderEnabled && (
-                        <input
-                          type="time"
-                          className="rounded-xl bg-background border border-border px-2 py-1 text-xs"
-                          value={habit.reminderTime ?? habit.timeOfDay}
-                          onChange={e =>
-                            updateHabit(habit.id, {
-                              reminderTime: e.target.value,
-                            })
-                          }
-                        />
-                      )}
-                      <button
-                        onClick={() =>
-                          updateHabit(habit.id, {
-                            smartReminderEnabled: !habit.smartReminderEnabled,
-                          })
-                        }
-                        className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
-                          habit.smartReminderEnabled ? 'bg-primary' : 'bg-muted'
-                        }`}
-                        aria-label="Toggle smart reminders"
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
-                            habit.smartReminderEnabled ? 'translate-x-5' : ''
-                          }`}
-                        />
-                      </button>
+            </div>
+          </section>
+
+          {/* Preferences */}
+          <section>
+            <p className="text-[11px] font-body uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              Preferences
+            </p>
+            <div className="space-y-3">
+              {activeHabits.length > 0 && (
+                <div className="rounded-2xl bg-card shadow-card border border-border/60 px-4 py-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium font-body">Smart reminders</p>
+                      <p className="text-[11px] text-muted-foreground font-body">
+                        Gentle nudges at the right time.
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="space-y-2">
+                    {activeHabits.map(habit => (
+                      <div
+                        key={habit.id}
+                        className="flex items-center justify-between gap-3 rounded-2xl bg-background border border-border/70 px-3 py-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          {(() => {
+                            const Icon = getHabitIconByTitle(habit.title);
+                            return <Icon className="w-5 h-5 text-muted-foreground" />;
+                          })()}
+                          <div>
+                            <p className="text-sm font-medium font-body">{habit.title}</p>
+                            <p className="text-[11px] text-muted-foreground font-body">
+                              {habit.smartReminderEnabled
+                                ? 'Smart reminders on'
+                                : 'Smart reminders off'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {habit.smartReminderEnabled && (
+                            <input
+                              type="time"
+                              className="rounded-xl bg-card border border-border px-2 py-1 text-xs font-body"
+                              value={habit.reminderTime ?? habit.timeOfDay}
+                              onChange={e =>
+                                updateHabit(habit.id, {
+                                  reminderTime: e.target.value,
+                                })
+                              }
+                            />
+                          )}
+                          <button
+                            onClick={() =>
+                              updateHabit(habit.id, {
+                                smartReminderEnabled: !habit.smartReminderEnabled,
+                              })
+                            }
+                            className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
+                              habit.smartReminderEnabled ? 'bg-primary' : 'bg-muted'
+                            }`}
+                            aria-label="Toggle smart reminders"
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
+                                habit.smartReminderEnabled ? 'translate-x-5' : ''
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* Sound */}
-          <div className="p-4 rounded-2xl bg-card shadow-card">
-            <p className="text-xs text-muted-foreground mb-1 font-body">Feedback</p>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Sound effects</p>
-                <p className="text-[11px] text-muted-foreground">Tick on hold, chime on completion</p>
+              <div className="rounded-2xl bg-card shadow-card border border-border/60 px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium font-body">Sound effects</p>
+                    <p className="text-[11px] text-muted-foreground font-body">
+                      Tick on hold, chime on completion.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSoundEnabled(!state.soundEnabled)}
+                    className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
+                      state.soundEnabled ? 'bg-primary' : 'bg-muted'
+                    }`}
+                    aria-label="Toggle sound effects"
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
+                        state.soundEnabled ? 'translate-x-5' : ''
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setSoundEnabled(!state.soundEnabled)}
-                className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
-                  state.soundEnabled ? 'bg-primary' : 'bg-muted'
-                }`}
-                aria-label="Toggle sound effects"
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
-                    state.soundEnabled ? 'translate-x-5' : ''
-                  }`}
-                />
-              </button>
             </div>
-          </div>
+          </section>
 
           {/* Reset */}
-          <div className="pt-8">
+          <section className="pt-4">
+            <p className="text-[11px] font-body uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              Danger zone
+            </p>
             <button
               onClick={() => {
                 if (window.confirm('This will reset all your data. Are you sure?')) {
@@ -168,11 +215,11 @@ export default function Settings() {
                   window.location.href = '/';
                 }
               }}
-              className="w-full py-3 rounded-2xl bg-destructive/10 text-destructive font-medium text-sm"
+              className="w-full py-3 rounded-2xl bg-destructive/10 text-destructive font-medium text-sm font-body"
             >
-              Reset All Data
+              Reset all data
             </button>
-          </div>
+          </section>
         </div>
       </div>
       <TabBar />

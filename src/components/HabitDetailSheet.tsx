@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { eachDayOfInterval, endOfMonth, format, getDay, startOfMonth, subDays, isSameDay } from 'date-fns';
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  getDay,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  subDays,
+  subMonths,
+} from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Trash2, Save, Flame } from 'lucide-react';
+import { X, Trash2, Save, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Habit, HABIT_COLOR_MAP, type HabitColor } from '@/lib/habitData';
 import { useApp } from '@/contexts/AppContext';
 
@@ -22,6 +33,7 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
   );
 
   const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState<Date>(today);
 
   const currentStreak = habit ? getHabitStreak(habit.id) : 0;
 
@@ -68,8 +80,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
     return Math.round((completedDays / 30) * 100);
   }, [habit, logsForHabit, today]);
 
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startPadding = getDay(monthStart);
 
@@ -86,6 +98,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
     setLocation(habit.location ?? '');
     setWhy(habit.why ?? '');
     setColor(habit.color ?? 'amber');
+     // reset history calendar to current month when opening / switching habits
+    setCurrentMonth(today);
   }, [habit?.id]);
 
   if (!habit) return null;
@@ -157,64 +171,33 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
             </div>
 
             <div className="px-5 pb-6 space-y-6">
-              {/* Top stats: streak + 30-day rate */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 space-y-1.5 shadow-card">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-body">
-                    Streak
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
-                    <span className="text-2xl font-display" style={{ color: 'var(--ink-color)' }}>
-                      {currentStreak}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    day streak · best {bestStreak}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 flex flex-col items-center justify-center shadow-card">
-                  <div className="relative w-16 h-16 mb-1">
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r={radius}
-                        fill="none"
-                        stroke="hsl(var(--border))"
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r={radius}
-                        fill="none"
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="8"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={offset}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-sm font-semibold" style={{ color: 'var(--ink-color)' }}>
-                        {clampedRate}%
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">Last 30 days</p>
-                </div>
-              </div>
-
-              {/* Calendar — tap a day to mark done, skipped, or clear (past & today only) */}
-              <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-4 py-4 shadow-card">
-                <p className="text-[11px] text-muted-foreground mb-2 font-body uppercase tracking-[0.16em]">
-                  History
+              {/* History calendar FIRST — month arrows + calendar, then stats below */}
+              <div className="rounded-2xl border-2 border-[color:var(--accent-color)]/40 bg-card px-4 py-4 shadow-card">
+                <p className="text-[11px] text-muted-foreground mb-3 font-body uppercase tracking-[0.16em]">
+                  History — log past days
                 </p>
-                <p className="text-sm font-medium mb-1" style={{ color: 'var(--ink-color)' }}>
-                  {format(today, 'MMMM yyyy')}
-                </p>
+                <div className="flex items-center justify-between mb-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-white shadow-md hover:opacity-90 active:scale-95 transition-all"
+                    aria-label="Previous month"
+                  >
+                    <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
+                  </button>
+                  <p className="text-base font-bold text-foreground min-w-[160px] text-center tabular-nums">
+                    {format(currentMonth, 'MMMM yyyy')}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                    disabled={isSameMonth(currentMonth, today)}
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-white shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    aria-label="Next month"
+                  >
+                    <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
+                  </button>
+                </div>
                 <p className="text-[11px] text-muted-foreground mb-3 font-body">
                   Tap a day to mark done, skipped, or clear
                 </p>
@@ -277,6 +260,55 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Streak + 30-day rate */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 space-y-1.5 shadow-card">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-body">
+                    Streak
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
+                    <span className="text-2xl font-display" style={{ color: 'var(--ink-color)' }}>
+                      {currentStreak}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    day streak · best {bestStreak}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-3 py-3 flex flex-col items-center justify-center shadow-card">
+                  <div className="relative w-16 h-16 mb-1">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="none"
+                        stroke="hsl(var(--border))"
+                        strokeWidth="8"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="8"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--ink-color)' }}>
+                        {clampedRate}%
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Last 30 days</p>
                 </div>
               </div>
 

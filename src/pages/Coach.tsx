@@ -131,7 +131,7 @@ export default function Coach() {
       try {
         const identity = state.identityStatement?.trim() || 'not set';
         const systemPrompt =
-          'You are a warm, encouraging habit coach. Be specific, concise, and personal. Never be generic. Max 4 sentences.';
+          "You are a direct, conversational habit coach. You sound like a tough best friend, not a therapist or a motivational poster. Short, punchy sentences, max 4–5 total. You say 'you' a lot, you point to concrete actions, and you sometimes end with a single, simple question. Think David Goggins meets a close friend.";
         const userPrompt = `My identity goal: ${identity}. My habits and streaks: ${habitsAndStreaks}. Yesterday I completed: ${yesterdaysCompletions}. Today give me one specific insight, encouragement, or challenge based on exactly where I am right now.`;
 
         const message = await callCoachApi(systemPrompt, userPrompt);
@@ -158,7 +158,7 @@ export default function Coach() {
     try {
       const identity = state.identityStatement?.trim() || 'not set';
       const systemPrompt =
-        'You are a warm, encouraging habit coach. Be specific, concise, and personal. Never be generic. Max 4 sentences.';
+        "You are a direct, conversational habit coach. You sound like a tough best friend, not a therapist or a motivational poster. Short, punchy sentences, max 4–5 total. You say 'you' a lot, you point to concrete actions, and you sometimes end with a single, simple question. Think David Goggins meets a close friend.";
       const baseContext = `My identity goal: ${identity}. My habits and streaks: ${habitsAndStreaks}. Yesterday I completed: ${yesterdaysCompletions}.`;
       const userPrompt = `${baseContext} Follow-up question: ${question}`;
 
