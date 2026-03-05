@@ -10,6 +10,7 @@ interface AppContextType {
   updateHabit: (habitId: string, updates: Partial<Habit>) => void;
   toggleHabitCompletion: (habitId: string) => void;
   skipHabit: (habitId: string) => void;
+  setHabitLogForDate: (habitId: string, date: string, type: 'completed' | 'skipped' | null) => void;
   deleteHabit: (habitId: string) => void;
   isHabitCompletedToday: (habitId: string) => boolean;
   isHabitSkippedToday: (habitId: string) => boolean;
@@ -93,6 +94,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         date: today,
         completed: false,
         skipped: true,
+        completedAt: new Date().toISOString(),
+      };
+      return { ...prev, habitLogs: [...filtered, newLog] };
+    });
+  }, []);
+
+  const setHabitLogForDate = useCallback((habitId: string, date: string, type: 'completed' | 'skipped' | null) => {
+    setState(prev => {
+      const filtered = prev.habitLogs.filter(l => !(l.habitId === habitId && l.date === date));
+      if (type === null) {
+        return { ...prev, habitLogs: filtered };
+      }
+      const newLog: HabitLog = {
+        id: generateId(),
+        habitId,
+        date,
+        completed: type === 'completed',
+        skipped: type === 'skipped',
         completedAt: new Date().toISOString(),
       };
       return { ...prev, habitLogs: [...filtered, newLog] };
@@ -247,6 +266,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateHabit,
       toggleHabitCompletion,
       skipHabit,
+      setHabitLogForDate,
       deleteHabit,
       isHabitCompletedToday,
       isHabitSkippedToday,

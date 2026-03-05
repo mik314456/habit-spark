@@ -3,9 +3,9 @@ import { eachDayOfInterval, endOfMonth, format, getDay, startOfMonth, subDays, i
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Trash2, Save, Flame } from 'lucide-react';
 import { Habit, HABIT_COLOR_MAP, type HabitColor } from '@/lib/habitData';
+import { useApp } from '@/contexts/AppContext';
 
 const HABIT_COLORS = Object.keys(HABIT_COLOR_MAP) as HabitColor[];
-import { useApp } from '@/contexts/AppContext';
 
 interface HabitDetailSheetProps {
   open: boolean;
@@ -14,7 +14,7 @@ interface HabitDetailSheetProps {
 }
 
 export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSheetProps) {
-  const { state, getHabitStreak, updateHabit, deleteHabit } = useApp();
+  const { state, getHabitStreak, updateHabit, deleteHabit, setHabitLogForDate } = useApp();
 
   const logsForHabit = useMemo(
     () => state.habitLogs.filter(l => habit && l.habitId === habit.id),
@@ -115,6 +115,15 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
     return 'none';
   };
 
+  const cycleLogForDate = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    if (dateStr > format(today, 'yyyy-MM-dd')) return; // no editing future dates
+    const status = statusForDate(date);
+    if (status === 'none') setHabitLogForDate(habit.id, dateStr, 'completed');
+    else if (status === 'completed') setHabitLogForDate(habit.id, dateStr, 'skipped');
+    else setHabitLogForDate(habit.id, dateStr, null);
+  };
+
   return (
     <AnimatePresence>
       {open && (
@@ -198,13 +207,16 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                 </div>
               </div>
 
-              {/* Calendar */}
+              {/* Calendar — tap a day to mark done, skipped, or clear (past & today only) */}
               <div className="rounded-2xl border border-[color:var(--card-border-color)] bg-card px-4 py-4 shadow-card">
                 <p className="text-[11px] text-muted-foreground mb-2 font-body uppercase tracking-[0.16em]">
                   History
                 </p>
-                <p className="text-sm font-medium mb-3" style={{ color: 'var(--ink-color)' }}>
+                <p className="text-sm font-medium mb-1" style={{ color: 'var(--ink-color)' }}>
                   {format(today, 'MMMM yyyy')}
+                </p>
+                <p className="text-[11px] text-muted-foreground mb-3 font-body">
+                  Tap a day to mark done, skipped, or clear
                 </p>
                 <div className="grid grid-cols-7 gap-2 text-center text-[11px]">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
@@ -218,9 +230,11 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   {calendarDays.map(day => {
                     const status = statusForDate(day);
                     const isToday = isSameDay(day, today);
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const isPastOrToday = dateStr <= format(today, 'yyyy-MM-dd');
                     let style: React.CSSProperties = {};
                     let className =
-                      'w-7 h-7 flex items-center justify-center rounded-full mx-auto';
+                      'w-7 h-7 flex items-center justify-center rounded-full mx-auto font-body';
 
                     if (status === 'completed') {
                       style.backgroundColor = 'var(--accent-light-color)';
@@ -239,11 +253,27 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                       style.outlineWidth = '1px';
                     }
 
+                    if (isPastOrToday) {
+                      className += ' cursor-pointer hover:opacity-80 active:scale-95 transition-transform';
+                    }
+
                     return (
-                      <div key={format(day, 'yyyy-MM-dd')} className="flex items-center justify-center">
-                        <div className={className} style={style}>
-                          {format(day, 'd')}
-                        </div>
+                      <div key={dateStr} className="flex items-center justify-center">
+                        {isPastOrToday ? (
+                          <button
+                            type="button"
+                            onClick={() => cycleLogForDate(day)}
+                            className={className}
+                            style={style}
+                            aria-label={`${dateStr}: ${status === 'completed' ? 'Done' : status === 'skipped' ? 'Skipped' : 'Not done'}. Tap to change.`}
+                          >
+                            {format(day, 'd')}
+                          </button>
+                        ) : (
+                          <div className={className} style={style}>
+                            {format(day, 'd')}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
