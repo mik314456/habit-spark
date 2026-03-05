@@ -92,6 +92,10 @@
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 70%;
 
+    /* Accent surfaces in dark: use tint so selected chips/cards stay readable */
+    --accent-color: hsl(25 92% 56%);
+    --accent-light-color: hsl(25 92% 56% / 0.28);
+
     --accent: 15 85% 62%;
     --accent-foreground: 0 0% 100%;
 

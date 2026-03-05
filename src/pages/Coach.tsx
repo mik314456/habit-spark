@@ -12,6 +12,17 @@ interface DailyCoachCache {
 
 const DAILY_KEY = 'coach-daily-message-v1';
 
+/** Split message into paragraphs of 2 sentences each for readability */
+function paragraphsEveryTwoSentences(text: string): string[] {
+  const sentences =
+    text.match(/[^.!?]+[.!?]?\s*/g)?.map(s => s.trim()).filter(Boolean) ?? [text];
+  const out: string[] = [];
+  for (let i = 0; i < sentences.length; i += 2) {
+    out.push(sentences.slice(i, i + 2).join(' '));
+  }
+  return out.length > 0 ? out : [text];
+}
+
 async function callCoachApi(systemPrompt: string, userPrompt: string): Promise<string> {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
   if (!apiKey) {
@@ -192,9 +203,11 @@ export default function Coach() {
             </p>
           )}
           {dailyMessage && (
-            <p className="text-base leading-relaxed mb-4">
-              {dailyMessage}
-            </p>
+            <div className="text-base mb-4 space-y-3" style={{ lineHeight: 1.8 }}>
+              {paragraphsEveryTwoSentences(dailyMessage).map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
+            </div>
           )}
           <p className="text-xs text-muted-foreground">
             {format(today, 'EEEE, MMMM d')}

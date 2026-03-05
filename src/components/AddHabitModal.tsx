@@ -17,8 +17,24 @@ import {
   Flame,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate } from '@/lib/habitData';
+import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate, type HabitColor } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
+
+function habitColorStyle(color: HabitColor) {
+  const varName = `--habit-${color}`;
+  return {
+    backgroundColor: `hsl(var(${varName}))`,
+    boxShadow: `0 0 28px 6px hsl(var(${varName}) / 0.4)`,
+  };
+}
+
+function habitIconColor(color: HabitColor) {
+  return { color: `hsl(var(--habit-${color}))` };
+}
+
+function toSentenceCase(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
 
 interface AddHabitModalProps {
   onClose: () => void;
@@ -44,7 +60,10 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
     setHabitTime(t.defaultTime);
     setHabitLocation(t.defaultLocation);
     setHabitWhy(t.why);
-    setStep(1);
+  };
+
+  const goToSetup = () => {
+    if (selectedTemplate) setStep(1);
   };
 
   const startCustom = () => {
@@ -123,26 +142,58 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
         </div>
 
         {step === 0 ? (
-          <div className="p-5 space-y-4">
+          <div className="p-5 pb-6">
             {HABIT_CATEGORIES.map(cat => {
               const templates = HABIT_TEMPLATES.filter(t => t.category === cat);
+              if (templates.length === 0) return null;
               return (
-                <div key={cat} className="mb-1">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 font-body">{cat}</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {templates.map(t => (
-                      <button
-                        key={t.id}
-                        onClick={() => selectTemplate(t)}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-background hover:bg-muted transition-colors text-left"
-                      >
-                        {(() => {
-                          const Icon = getHabitIconByTitle(t.title);
-                          return <Icon className="w-5 h-5 text-muted-foreground" />;
-                        })()}
-                        <span className="text-sm font-medium">{t.title}</span>
-                      </button>
-                    ))}
+                <div key={cat} className="mt-8 first:mt-4">
+                  <h3 className="text-sm font-medium text-foreground mb-3 font-body text-left">
+                    {toSentenceCase(cat)}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {templates.map(t => {
+                      const Icon = getHabitIconByTitle(t.title);
+                      const isSelected = selectedTemplate?.id === t.id;
+                      return (
+                        <motion.button
+                          key={t.id}
+                          type="button"
+                          onClick={() => selectTemplate(t)}
+                          className={`relative flex flex-col items-center justify-center rounded-[16px] border w-[150px] h-[130px] mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+                            isSelected
+                              ? ''
+                              : 'bg-card border-border text-foreground dark:bg-[#1a1a1a] dark:border-white/10 dark:text-white'
+                          }`}
+                          animate={{
+                            scale: isSelected ? 1.03 : 1,
+                          }}
+                          transition={{ duration: 0.2 }}
+                          style={
+                            isSelected
+                              ? {
+                                  ...habitColorStyle(t.color),
+                                  borderColor: 'transparent',
+                                }
+                              : undefined
+                          }
+                        >
+                          <span
+                            className="flex items-center justify-center mb-2"
+                            style={isSelected ? { color: '#fff' } : habitIconColor(t.color)}
+                          >
+                            <Icon className="w-8 h-8" strokeWidth={1.8} />
+                          </span>
+                          <span
+                            className={`text-center text-[13px] px-1 leading-tight ${
+                              isSelected ? 'text-white font-bold' : 'font-medium'
+                            }`}
+                          >
+                            {t.title}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -151,10 +202,19 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
             <button
               type="button"
               onClick={startCustom}
-              className="mt-2 w-full flex items-center gap-2 px-3 py-3 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:bg-muted/60 transition-colors"
+              className="mt-6 w-full flex flex-col items-center justify-center gap-2 py-5 rounded-[16px] border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors font-body text-sm font-medium bg-card dark:bg-[#1a1a1a] dark:border-white/20 dark:text-white/80 dark:hover:border-white/30 dark:hover:text-white/90"
             >
-              <Plus className="w-4 h-4" />
-              <span>Create your own</span>
+              <Plus className="w-6 h-6" />
+              <span>Create your own habit</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={goToSetup}
+              disabled={!selectedTemplate}
+              className="mt-6 w-full py-3.5 rounded-2xl font-body font-semibold text-[15px] transition-all disabled:opacity-40 disabled:pointer-events-none bg-primary text-primary-foreground hover:opacity-95"
+            >
+              Continue
             </button>
           </div>
         ) : isCustom ? (

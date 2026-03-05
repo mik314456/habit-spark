@@ -104,7 +104,7 @@ export default function Onboarding() {
             onClick={() => setIdentity(chip)}
             className={`px-4 py-2 rounded-full text-[13px] font-body border transition-all ${
               identity === chip
-                ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)]'
+                ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)] dark:text-white'
                 : 'border-[color:var(--card-border-color)] text-muted-foreground hover:border-[color:var(--accent-color)]/60'
             }`}
           >
@@ -151,7 +151,7 @@ export default function Onboarding() {
                       }}
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
                         isSelected
-                          ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card'
+                          ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card dark:text-white'
                           : 'border-[color:var(--card-border-color)] bg-card shadow-card hover:border-[color:var(--accent-color)]/60'
                       }`}
                     >
@@ -160,14 +160,14 @@ export default function Onboarding() {
                         return (
                           <Icon
                             className={`w-6 h-6 ${
-                              isSelected ? 'text-[color:var(--accent-color)]' : 'text-muted-foreground'
+                              isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : 'text-muted-foreground'
                             }`}
                           />
                         );
                       })()}
                       <span
                         className={`text-sm font-body font-medium ${
-                          isSelected ? 'text-[color:var(--accent-color)]' : ''
+                          isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : ''
                         }`}
                       >
                         {t.title}

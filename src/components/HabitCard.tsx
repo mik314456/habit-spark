@@ -19,15 +19,18 @@ import {
 import { Habit, HabitColor, HABIT_COLOR_MAP } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
 
-const colorClasses: Record<HabitColor, { bg: string; border: string; fill: string; tint: string }> = {
-  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10' },
-  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10' },
-  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10' },
-  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10' },
-  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10' },
-  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10' },
-  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10' },
-  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10' },
+const colorClasses: Record<
+  HabitColor,
+  { bg: string; border: string; fill: string; tint: string; tintSubtle: string; tintCompleted: string }
+> = {
+  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10', tintSubtle: 'bg-habit-amber/5', tintCompleted: 'bg-habit-amber/15' },
+  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10', tintSubtle: 'bg-habit-sage/5', tintCompleted: 'bg-habit-sage/15' },
+  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10', tintSubtle: 'bg-habit-coral/5', tintCompleted: 'bg-habit-coral/15' },
+  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10', tintSubtle: 'bg-habit-sky/5', tintCompleted: 'bg-habit-sky/15' },
+  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10', tintSubtle: 'bg-habit-violet/5', tintCompleted: 'bg-habit-violet/15' },
+  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10', tintSubtle: 'bg-habit-rose/5', tintCompleted: 'bg-habit-rose/15' },
+  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10', tintSubtle: 'bg-habit-teal/5', tintCompleted: 'bg-habit-teal/15' },
+  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10', tintSubtle: 'bg-habit-slate/5', tintCompleted: 'bg-habit-slate/15' },
 };
 
 interface HabitCardProps {
@@ -137,31 +140,29 @@ export default function HabitCard({
   }, [isHolding, holdProgress]);
 
   const circumference = 2 * Math.PI * 18;
-
   const fillAmount = completed && !isHolding ? 1 : holdProgress;
 
   return (
     <motion.div className="relative mb-3 animate-habit-card" layout>
       <motion.div
-        className="relative rounded-[14px] bg-card shadow-card overflow-hidden select-none border"
+        className={`relative rounded-[14px] border border-border border-l-[3px] shadow-card overflow-hidden select-none ${completed ? colors.tintCompleted : colors.tintSubtle} ${colors.border}`}
         onPointerDown={startHold}
         onPointerUp={endHold}
         onPointerLeave={endHold}
+        transition={{ duration: 0.25, ease: 'easeInOut' }}
       >
-        {/* Horizontal fill overlay */}
+        {/* Hold-to-complete progress fill (habit color, left-to-right) */}
         <motion.div
-          className="absolute inset-0 rounded-[14px] origin-left pointer-events-none"
+          className={`absolute inset-0 rounded-[14px] origin-left pointer-events-none ${colors.tint}`}
           style={{
-            backgroundColor: 'var(--accent-light-color)',
             transform: `scaleX(${fillAmount || 0})`,
-            opacity: completed ? (justCompleted ? 0.65 : 0.28) : isHolding ? 0.3 : 0,
+            opacity: isHolding ? 0.7 : completed ? 0.4 : 0,
           }}
           transition={{
-            transform: { duration: 0.3, ease: 'easeInOut' },
-            opacity: { duration: 0.3, ease: 'easeInOut' },
+            transform: { duration: 0.15, ease: 'easeOut' },
+            opacity: { duration: 0.2 },
           }}
         />
-
         <div className="relative z-10 flex items-center gap-4 p-4">
           {/* Icon + content */}
           <div className="flex items-center gap-3 flex-1 min-w-0">

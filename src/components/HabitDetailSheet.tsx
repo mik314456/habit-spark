@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { eachDayOfInterval, endOfMonth, format, getDay, startOfMonth, subDays, isSameDay } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Trash2, Save, Flame } from 'lucide-react';
-import { Habit, HABIT_COLOR_MAP } from '@/lib/habitData';
+import { Habit, HABIT_COLOR_MAP, type HabitColor } from '@/lib/habitData';
+
+const HABIT_COLORS = Object.keys(HABIT_COLOR_MAP) as HabitColor[];
 import { useApp } from '@/contexts/AppContext';
 
 interface HabitDetailSheetProps {
@@ -75,6 +77,7 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
   const [timeOfDay, setTimeOfDay] = useState<string>(habit?.timeOfDay ?? '07:00');
   const [location, setLocation] = useState<string>(habit?.location ?? '');
   const [why, setWhy] = useState<string>(habit?.why ?? '');
+  const [color, setColor] = useState<HabitColor>(habit?.color ?? 'amber');
 
   useEffect(() => {
     if (!habit) return;
@@ -82,12 +85,13 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
     setTimeOfDay(habit.timeOfDay ?? '07:00');
     setLocation(habit.location ?? '');
     setWhy(habit.why ?? '');
+    setColor(habit.color ?? 'amber');
   }, [habit?.id]);
 
   if (!habit) return null;
 
   const handleSave = () => {
-    updateHabit(habit.id, { title, timeOfDay, location, why });
+    updateHabit(habit.id, { title, timeOfDay, location, why, color });
     onClose();
   };
 
@@ -248,6 +252,26 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
 
               {/* Edit form */}
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[11px] text-muted-foreground font-body">Color</label>
+                  <div className="flex flex-wrap gap-2">
+                    {HABIT_COLORS.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setColor(c)}
+                        className="w-9 h-9 rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-card focus:ring-[color:var(--accent-color)]"
+                        style={{
+                          backgroundColor: `hsl(var(--habit-${c}))`,
+                          borderColor: color === c ? `hsl(var(--habit-${c}))` : 'var(--card-border-color)',
+                          boxShadow: color === c ? `0 0 0 2px hsl(var(--habit-${c}) / 0.5)` : undefined,
+                        }}
+                        title={c}
+                        aria-label={`Color ${c}`}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <label className="text-[11px] text-muted-foreground font-body">Name</label>
                   <input

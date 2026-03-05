@@ -24,7 +24,7 @@ export default function Progress() {
       const date = subDays(today, 6 - i);
       const dateStr = format(date, 'yyyy-MM-dd');
       const totalHabits = activeHabits.length;
-      const completedHabits = state.habitLogs.filter(
+      const completedHabits = (state.habitLogs ?? []).filter(
         l => l.date === dateStr && l.completed
       ).length;
       return {
@@ -37,17 +37,32 @@ export default function Progress() {
     });
   }, [activeHabits, state.habitLogs, today]);
 
-  // Completion rates
-  const completionRate = (days: number) => {
+  // Completion rates (only count logs for active habits)
+  const completionRate = (days: number): number => {
+    const logs = state.habitLogs ?? [];
+    const activeIds = new Set(activeHabits.map(h => h.id));
     let total = 0;
     let completed = 0;
     for (let i = 0; i < days; i++) {
       const dateStr = format(subDays(today, i), 'yyyy-MM-dd');
       total += activeHabits.length;
-      completed += state.habitLogs.filter(l => l.date === dateStr && l.completed).length;
+      completed += logs.filter(
+        l => l.date === dateStr && l.completed && activeIds.has(l.habitId)
+      ).length;
     }
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
+    if (total === 0) return 0;
+    const pct = Math.round((completed / total) * 100);
+    return Number.isFinite(pct) ? pct : 0;
   };
+
+  const rate7 = (() => {
+    const n = completionRate(7);
+    return typeof n === 'number' && Number.isFinite(n) ? n : 0;
+  })();
+  const rate30 = (() => {
+    const n = completionRate(30);
+    return typeof n === 'number' && Number.isFinite(n) ? n : 0;
+  })();
 
   // Calendar
   const monthStart = startOfMonth(today);
@@ -73,43 +88,41 @@ export default function Progress() {
           <>
             {/* Streak hero */}
             <motion.div
-              className="text-center p-8 rounded-3xl mb-6 shadow-card border-2 border-[color:var(--accent-color)] bg-[color:var(--card-color)]"
+              className="text-center p-8 rounded-3xl mb-6 shadow-card border border-[color:var(--accent-color)]/30"
+              style={{
+                background: 'linear-gradient(135deg, #b85a2a 0%, #c96a3a 40%, #d4845a 100%)',
+              }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Flame className="w-6 h-6" style={{ color: 'var(--accent-color)' }} />
-                <p className="text-5xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
+                <Flame className="w-6 h-6 text-white" />
+                <p className="text-5xl font-body font-semibold text-white tabular-nums">
                   {currentStreak}
                 </p>
               </div>
-              <p className="text-sm mt-1 font-body font-medium" style={{ color: 'var(--ink-color)' }}>
+              <p className="text-sm mt-1 font-body font-medium text-white/95">
                 day streak
               </p>
             </motion.div>
 
-            {/* Weekly strip */}
+            {/* Weekly strip — today stays orange; past dates use theme-aware colors for dark mode */}
             <div className="flex justify-between mb-6 px-2">
               {weekDays.map(day => (
                 <div key={day.dateStr} className="flex flex-col items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground font-medium font-body">{day.label}</span>
                   <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium font-body transition-colors"
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium font-body tabular-nums transition-colors ${
+                      day.isToday
+                        ? ''
+                        : day.ratio > 0
+                          ? 'bg-primary/20 text-foreground'
+                          : 'bg-muted text-foreground'
+                    }`}
                     style={
                       day.isToday
-                        ? {
-                            backgroundColor: 'var(--accent-color)',
-                            color: '#ffffff',
-                          }
-                        : day.ratio > 0
-                          ? {
-                              backgroundColor: 'var(--accent-light-color)',
-                              color: 'var(--accent-color)',
-                            }
-                          : {
-                              backgroundColor: 'var(--card-border-color)',
-                              color: 'var(--muted-color)',
-                            }
+                        ? { backgroundColor: 'var(--accent-color)', color: '#ffffff' }
+                        : undefined
                     }
                   >
                     {format(day.date, 'd')}
@@ -120,19 +133,19 @@ export default function Progress() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="p-4 rounded-2xl bg-card shadow-card border border-[color:var(--card-border-color)]">
-                <p className="text-2xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
-                  {completionRate(7)}%
+              <div className="p-4 rounded-2xl bg-card shadow-card border border-border">
+                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-foreground tabular-nums">
+                  {String(rate7)}%
                 </p>
-                <p className="text-xs mt-1 font-body" style={{ color: 'var(--muted-color)' }}>
+                <p className="text-xs mt-1 font-body text-muted-foreground">
                   Last 7 days
                 </p>
               </div>
-              <div className="p-4 rounded-2xl bg-card shadow-card border border-[color:var(--card-border-color)]">
-                <p className="text-2xl font-body font-semibold" style={{ color: 'var(--ink-color)' }}>
-                  {completionRate(30)}%
+              <div className="p-4 rounded-2xl bg-card shadow-card border border-border">
+                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-foreground tabular-nums">
+                  {String(rate30)}%
                 </p>
-                <p className="text-xs mt-1 font-body" style={{ color: 'var(--muted-color)' }}>
+                <p className="text-xs mt-1 font-body text-muted-foreground">
                   Last 30 days
                 </p>
               </div>
@@ -151,20 +164,22 @@ export default function Progress() {
                 {calendarDays.map(day => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const totalHabits = activeHabits.length;
-                  const completedHabits = state.habitLogs.filter(l => l.date === dateStr && l.completed).length;
+                  const completedHabits = (state.habitLogs ?? []).filter(l => l.date === dateStr && l.completed).length;
                   const ratio = totalHabits > 0 ? completedHabits / totalHabits : 0;
                   const isToday = isSameDay(day, today);
 
                   return (
                     <div
                       key={dateStr}
-                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-body transition-colors ${
-                        ratio >= 1
-                          ? 'bg-primary text-primary-foreground'
-                          : ratio > 0
-                          ? 'bg-primary/20 text-foreground'
-                          : 'text-muted-foreground'
-                      } ${isToday ? 'ring-1 ring-primary' : ''}`}
+                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-body tabular-nums transition-colors ${
+                        isToday
+                          ? 'ring-1 ring-primary ' + (ratio >= 1 ? 'bg-primary text-primary-foreground' : ratio > 0 ? 'bg-primary/20 text-foreground' : 'bg-muted text-foreground')
+                          : ratio >= 1
+                            ? 'bg-primary text-primary-foreground'
+                            : ratio > 0
+                              ? 'bg-primary/20 text-foreground'
+                              : 'bg-muted text-foreground'
+                      }`}
                     >
                       {format(day, 'd')}
                     </div>
