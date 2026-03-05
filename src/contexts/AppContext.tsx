@@ -196,6 +196,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       soundEnabled: true,
       habits: [],
       habitLogs: [],
+      milestoneCelebrations: [],
     });
   }, []);
 
