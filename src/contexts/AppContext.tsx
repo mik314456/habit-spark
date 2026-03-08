@@ -15,6 +15,8 @@ interface AppContextType {
   isHabitCompletedToday: (habitId: string) => boolean;
   isHabitSkippedToday: (habitId: string) => boolean;
   getHabitStreak: (habitId: string) => number;
+  /** Consecutive days (including today if complete) where ALL habits were completed. Resets if a day is fully missed. */
+  getGlobalStreak: () => number;
   markMilestoneCelebrated: (habitId: string, milestone: number) => void;
   resetApp: () => void;
 }
@@ -176,6 +178,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return streak;
   }, [state.habitLogs]);
 
+  const getGlobalStreak = useCallback(() => {
+    const activeHabits = state.habits.filter(h => !h.archived);
+    if (activeHabits.length === 0) return 0;
+
+    const today = getToday();
+    const completedByDate = new Map<string, Set<string>>();
+    for (const log of state.habitLogs) {
+      if (!log.completed) continue;
+      if (!completedByDate.has(log.date)) completedByDate.set(log.date, new Set());
+      completedByDate.get(log.date)!.add(log.habitId);
+    }
+
+    const habitIds = new Set(activeHabits.map(h => h.id));
+    let streak = 0;
+    const cursor = new Date(today + 'T12:00:00');
+
+    while (true) {
+      const dateStr = cursor.toISOString().split('T')[0];
+      const completed = completedByDate.get(dateStr);
+      const allDone = completed && habitIds.size > 0 && [...habitIds].every(id => completed.has(id));
+      if (allDone) {
+        streak += 1;
+      } else {
+        break;
+      }
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return streak;
+  }, [state.habits, state.habitLogs]);
+
   const markMilestoneCelebrated = useCallback((habitId: string, milestone: number) => {
     setState(prev => {
       const existing: MilestoneCelebration[] = prev.milestoneCelebrations ?? [];
@@ -272,6 +305,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isHabitCompletedToday,
       isHabitSkippedToday,
       getHabitStreak,
+      getGlobalStreak,
       markMilestoneCelebrated,
       resetApp,
     }}>

@@ -11,11 +11,11 @@ const lessons = [
 
 export default function Learn() {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }}>
       <div className="max-w-md mx-auto px-5 pt-12">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl mb-2">Learn</h1>
-          <p className="text-muted-foreground text-sm mb-8">Daily lessons on building better habits</p>
+          <h1 className="text-2xl mb-2 font-semibold text-white">Learn</h1>
+          <p className="text-white/60 text-sm mb-8">Daily lessons on building better habits</p>
         </motion.div>
 
         {/* Today's lesson */}
@@ -31,22 +31,23 @@ export default function Learn() {
         </motion.div>
 
         {/* Other lessons */}
-        <h3 className="font-display text-lg mb-4">Recent Lessons</h3>
+        <h3 className="font-display text-lg mb-4 text-white">Recent Lessons</h3>
         <div className="space-y-3">
           {lessons.slice(1).map((lesson, i) => (
             <motion.div
               key={lesson.id}
-              className="p-4 rounded-2xl bg-card shadow-card flex items-center gap-4"
+              className="p-4 rounded-[20px] border flex items-center gap-4"
+              style={{ backgroundColor: '#111111', borderColor: '#222222' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-sm text-white/80 border border-white/20">
                 {lesson.category[0]}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">{lesson.title}</p>
-                <p className="text-xs text-muted-foreground">{lesson.readTime} min read</p>
+                <p className="text-sm font-medium text-white">{lesson.title}</p>
+                <p className="text-xs text-white/60">{lesson.readTime} min read</p>
               </div>
             </motion.div>
           ))}

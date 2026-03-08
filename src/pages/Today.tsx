@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   Plus,
   Sprout,
@@ -13,6 +14,7 @@ import {
   Flame,
   CheckSquare,
   Calendar,
+  Circle,
   Dumbbell,
   Brain,
   BookOpen,
@@ -34,7 +36,7 @@ import { getHabitIconByTitle } from '@/lib/habitIcons';
 import { Habit, type HabitColor } from '@/lib/habitData';
 import type { ComponentType } from 'react';
 
-/** Habit color to Tailwind bg class for week grid cells */
+/** Habit color to Tailwind bg class */
 const HABIT_BG: Record<HabitColor, string> = {
   amber: 'bg-habit-amber',
   sage: 'bg-habit-sage',
@@ -44,6 +46,18 @@ const HABIT_BG: Record<HabitColor, string> = {
   rose: 'bg-habit-rose',
   teal: 'bg-habit-teal',
   slate: 'bg-habit-slate',
+};
+
+/** Habit color for checkmark stroke (text class) */
+const HABIT_CHECK: Record<HabitColor, string> = {
+  amber: 'text-habit-amber',
+  sage: 'text-habit-sage',
+  coral: 'text-habit-coral',
+  sky: 'text-habit-sky',
+  violet: 'text-habit-violet',
+  rose: 'text-habit-rose',
+  teal: 'text-habit-teal',
+  slate: 'text-habit-slate',
 };
 
 const SPARK_QUIP_CACHE_KEY = 'spark-today-quip-v1';
@@ -276,6 +290,7 @@ export default function Today() {
   const skipHabit = app?.skipHabit ?? (() => {});
   const deleteHabit = app?.deleteHabit ?? (() => {});
   const getHabitStreak = app?.getHabitStreak ?? (() => 0);
+  const getGlobalStreak = app?.getGlobalStreak ?? (() => 0);
   const markMilestoneCelebrated = app?.markMilestoneCelebrated ?? (() => {});
 
   const habits = state?.habits ?? [];
@@ -372,11 +387,8 @@ export default function Today() {
     return withTime.slice(0, 3);
   }, [activeHabits, isHabitCompletedToday]);
 
-  // Best streak across habits (for Weather row + Quick Stats)
-  const bestStreak = useMemo(
-    () => Math.max(0, ...activeHabits.map(h => getHabitStreak(h.id))),
-    [activeHabits, getHabitStreak],
-  );
+  // Global streak: consecutive days where ALL habits completed (for Weather row + Quick Stats)
+  const bestStreak = useMemo(() => getGlobalStreak(), [getGlobalStreak]);
 
   const totalCompletions = useMemo(
     () => (Array.isArray(habitLogs) ? habitLogs.filter(l => l.completed).length : 0),
@@ -522,12 +534,12 @@ export default function Today() {
 
   if (!app) {
     return (
-      <div className="min-h-screen pb-24" style={{ backgroundColor: '#0a0a0a' }} />
+      <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }} />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }}>
       <div className="max-w-md mx-auto px-5 pt-12">
         <AnimatePresence>
           {showDontMissBanner && (
@@ -728,10 +740,10 @@ export default function Today() {
             className="text-center py-16"
           >
             <p className="mb-4 flex justify-center">
-              <Sprout className="w-10 h-10 text-primary" />
+              <Sprout className="w-10 h-10 text-[var(--accent-color)]" />
             </p>
-            <h2 className="text-xl mb-2">No habits yet</h2>
-            <p className="text-muted-foreground text-sm mb-6">Add your first habit and start building.</p>
+            <h2 className="text-xl mb-2 font-semibold text-white">No habits yet</h2>
+            <p className="text-white/60 text-sm mb-6">Add your first habit and start building.</p>
             <button
               onClick={() => setShowAddHabit(true)}
               className="px-6 py-3 rounded-2xl gradient-warm text-primary-foreground font-semibold shadow-elevated"
@@ -798,59 +810,81 @@ export default function Today() {
           </motion.div>
         )}
 
-        {/* Week grid at the end: M–S header, then one row per habit (habit color = logged that day) */}
+        {/* Weekly tracker — single 7-column grid for perfect alignment */}
         {activeHabits.length > 0 && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-6 py-3 px-4 rounded-xl bg-muted/30 border border-border/40"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl p-4 border border-[#222222]"
+            style={{ backgroundColor: '#111111' }}
           >
-            {/* Header row: day letters — 11px, font-weight 500, equal column spacing */}
-            <div className="grid grid-cols-7 gap-4 mb-1.5">
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, i) => {
-                const weekData = weekCompletionByHabit[activeHabits[0]?.id];
-                const day = weekData?.[i];
-                const isToday = day?.isToday ?? false;
-                const isFuture = day?.isFuture ?? false;
+            <p className="text-[11px] text-white/60 uppercase tracking-wide font-body mb-4">
+              This week
+            </p>
+            {/* One grid: 7 cols, row 1 = letters, row 2+ = habit cells — gap-x-5 (20px), gap-y-3 (12px) */}
+            <div className="grid grid-cols-7 gap-x-5 gap-y-3">
+              {/* Row 1: day letters — each cell same width, centered */}
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, dayIndex) => {
+                const dayInfo = weekCompletionByHabit[activeHabits[0]?.id]?.[dayIndex];
+                const isToday = dayInfo?.isToday ?? false;
                 return (
-                  <span
-                    key={i}
-                    className={`text-[15px] font-medium font-body text-center ${
-                      isToday ? 'text-foreground font-semibold' : isFuture ? 'text-muted-foreground/60' : 'text-muted-foreground'
-                    }`}
+                  <div
+                    key={`letter-${dayIndex}`}
+                    className="flex flex-col items-center justify-center min-h-[32px]"
                   >
-                    {letter}
-                  </span>
+                    <span
+                      className={`text-[12px] font-semibold font-body tabular-nums ${
+                        isToday ? 'text-white' : 'text-white/50'
+                      }`}
+                    >
+                      {letter}
+                    </span>
+                  </div>
                 );
               })}
-            </div>
-            {/* One row per habit: 6px dots, same style as habit card week dots */}
-            {activeHabits.map(habit => {
-              const week = weekCompletionByHabit[habit.id];
-              const bgClass = HABIT_BG[habit.color];
-              return (
-                <div key={habit.id} className="grid grid-cols-7 gap-4 mt-2.5 first:mt-0">
-                  {week && week.length === 7
-                    ? week.map((day, i) => (
-                        <span
-                          key={i}
-                          className="flex justify-center"
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              day.isFuture
-                                ? 'bg-muted/50'
-                                : day.completed
-                                  ? bgClass
-                                  : 'border border-muted-foreground/60 bg-transparent'
-                            }`}
-                          />
+              {/* Rows 2+ : one row per habit, 7 cells each — same cell size for perfect alignment */}
+              {activeHabits.map(habit => {
+                const week = weekCompletionByHabit[habit.id];
+                if (!week || week.length !== 7) return null;
+                return week.map((day, dayIndex) => {
+                  const completed = day?.completed ?? false;
+                  const isFuture = day?.isFuture ?? false;
+                  return (
+                    <div
+                      key={`${habit.id}-${dayIndex}`}
+                      className="flex items-center justify-center min-h-[28px] w-full"
+                    >
+                      {completed ? (
+                        <Check
+                          className={`w-5 h-5 shrink-0 ${HABIT_CHECK[habit.color]}`}
+                          strokeWidth={2.25}
+                        />
+                      ) : isFuture ? (
+                        <span className="w-7 h-7 flex items-center justify-center shrink-0">
+                          <Circle className="w-5 h-5 text-white/[0.1]" strokeWidth={1.5} />
                         </span>
-                      ))
-                    : null}
+                      ) : (
+                        <span className="w-7 h-7 flex items-center justify-center shrink-0">
+                          <Circle className="w-5 h-5 text-white/20" strokeWidth={1.5} />
+                        </span>
+                      )}
+                    </div>
+                  );
+                });
+              })}
+            </div>
+            {/* Legend */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-[#222222]">
+              {activeHabits.map(habit => (
+                <div key={habit.id} className="flex items-center gap-2">
+                  <Check
+                    className={`w-4 h-4 shrink-0 ${HABIT_CHECK[habit.color]}`}
+                    strokeWidth={2.25}
+                  />
+                  <span className="text-[11px] text-white/50 font-body">{habit.title}</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </motion.div>
         )}
 

@@ -383,7 +383,7 @@ export default function Coach() {
   const hasTyped = inputValue.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pb-24">
+    <div className="min-h-screen flex flex-col pb-24" style={{ backgroundColor: '#080808' }}>
       <div className="max-w-md mx-auto w-full flex flex-col flex-1 min-h-0 px-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -391,9 +391,9 @@ export default function Coach() {
           className="flex items-center gap-2 pt-6 pb-2 flex-shrink-0"
         >
           <SparkHeaderFigure />
-          <h1 className="text-2xl">Spark</h1>
+          <h1 className="text-2xl font-semibold text-white">Spark</h1>
         </motion.div>
-        <p className="text-muted-foreground text-sm mb-3 flex-shrink-0">
+        <p className="text-white/60 text-sm mb-3 flex-shrink-0">
           {sparkGreeting}
         </p>
 
@@ -437,7 +437,13 @@ export default function Coach() {
           )}
 
           {error && (
-            <p className="text-sm text-destructive px-1">{error}</p>
+            <div className="flex">
+              <div className={SPARK_BUBBLE_CLASS}>
+                <p className="text-sm font-body whitespace-pre-wrap break-words" style={{ lineHeight: 1.7 }}>
+                  {error}
+                </p>
+              </div>
+            </div>
           )}
         </div>
 
@@ -462,13 +468,14 @@ export default function Coach() {
           )}
 
           <div
-            className="rounded-2xl border p-3 space-y-2"
-            style={{ backgroundColor: '#111111', borderColor: '#1e1e1e' }}
+            className="rounded-[20px] border p-3 space-y-2"
+            style={{ backgroundColor: '#111111', borderColor: '#222222' }}
           >
             <div className="relative">
               <textarea
                 rows={2}
-                className="w-full rounded-xl bg-background border border-border px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                className="w-full rounded-xl border px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] text-white placeholder:text-white/40"
+                style={{ backgroundColor: '#0d0d0d', borderColor: '#222222' }}
                 placeholder="Ask Spark anything..."
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}

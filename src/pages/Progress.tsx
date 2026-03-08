@@ -29,7 +29,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { useApp } from '@/contexts/AppContext';
-import { Habit, HABIT_COLOR_MAP } from '@/lib/habitData';
+import { Habit } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
 import TabBar from '@/components/TabBar';
 
@@ -50,17 +50,14 @@ const explicitIconMap: Record<string, ComponentType<{ className?: string; style?
 };
 
 export default function Progress() {
-  const { state, getHabitStreak } = useApp();
+  const { state, getHabitStreak, getGlobalStreak } = useApp();
 
   const activeHabits = state.habits.filter(h => !h.archived);
   const today = new Date();
 
-  // Best streak across all habits
-  const bestStreak = useMemo(() => {
-    return Math.max(0, ...activeHabits.map(h => getHabitStreak(h.id)));
-  }, [activeHabits, getHabitStreak]);
-
-  const currentStreak = bestStreak;
+  // Global streak: consecutive days where ALL habits completed
+  const currentStreak = useMemo(() => getGlobalStreak(), [getGlobalStreak]);
+  const bestStreak = currentStreak;
 
   // Weekly dots
   const weekDays = useMemo(() => {
@@ -149,113 +146,121 @@ export default function Progress() {
   }, [activeHabits, state.habitLogs, today]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }}>
       <div className="max-w-md mx-auto px-5 pt-12">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-body text-2xl mb-8">Progress</h1>
+          <h1 className="font-body text-2xl font-semibold text-white mb-8">Progress</h1>
         </motion.div>
 
         {activeHabits.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground font-body">
+          <div className="text-center py-16 font-body" style={{ color: '#666666' }}>
             <p className="mb-4 flex justify-center">
-              <BarChart2 className="w-10 h-10" />
+              <BarChart2 className="w-10 h-10" style={{ color: '#666666' }} />
             </p>
             <p>Complete some habits to see your progress</p>
           </div>
         ) : (
           <>
-            {/* Streak hero */}
+            {/* Current streak — dark card, orange number, no solid orange bg */}
             <motion.div
-              className="relative overflow-hidden rounded-3xl mb-6 shadow-card border border-[color:var(--accent-color)]/40 px-6 py-7"
-              style={{
-                background:
-                  'linear-gradient(135deg, #8a3a10 0%, #b85a2a 35%, #d87b3b 70%, #f0a15a 100%)',
-              }}
+              className="relative overflow-hidden rounded-[20px] mb-6 border px-6 py-7"
+              style={{ backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }}
               initial={{ opacity: 0, y: 10, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
             >
-              {/* Flame watermark */}
-              <Flame
-                className="absolute -right-6 -top-4 w-28 h-28 text-black/10"
-                strokeWidth={1}
-              />
-
               <div className="relative flex items-center justify-between gap-4">
                 <div className="flex flex-col items-start">
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/70 font-body mb-1">
+                  <p className="text-xs uppercase tracking-[0.16em] font-body mb-1" style={{ color: '#666666' }}>
                     Current streak
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <p className="text-6xl font-body font-semibold text-white tabular-nums leading-none">
+                    <p
+                      className="text-6xl font-body font-semibold tabular-nums leading-none"
+                      style={{ color: 'var(--accent-color)' }}
+                    >
                       {currentStreak}
                     </p>
-                    <span className="text-sm font-body text-white/80 mt-1">days</span>
+                    <span className="text-sm font-body text-white mt-1">days</span>
                   </div>
-                  <p className="text-sm mt-2 font-body text-white/90">
-                    day streak
-                  </p>
+                  <p className="text-sm mt-2 font-body text-white">day streak</p>
                 </div>
                 <div className="relative flex flex-col items-end justify-between h-full">
-                  <div className="px-3 py-1.5 rounded-full bg-black/15 border border-white/15 text-[11px] font-body text-white/90 backdrop-blur-sm">
+                  <button
+                    type="button"
+                    className="bg-transparent border rounded-full py-1.5 px-4 text-[11px] font-body uppercase tracking-[0.1em] transition-colors border-[#333333] text-[#666666] hover:border-[#555555] hover:text-[#999999]"
+                  >
                     Keep the chain alive
-                  </div>
-                  <p className="mt-6 text-xs font-body text-white/80">
-                    Best: <span className="font-semibold">{bestStreak}</span> days
+                  </button>
+                  <p className="mt-6 text-xs font-body" style={{ color: '#666666' }}>
+                    Best: <span className="font-semibold text-[#666666]">{bestStreak}</span> days
                   </p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Weekly strip — today stays orange; past dates use theme-aware colors for dark mode */}
-            <div className="flex justify-between mb-6 px-2">
-              {weekDays.map(day => (
-                <div key={day.dateStr} className="flex flex-col items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground font-medium font-body">{day.label}</span>
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium font-body tabular-nums transition-colors ${
-                      day.isToday
-                        ? ''
-                        : day.ratio > 0
-                          ? 'bg-primary/20 text-foreground'
-                          : 'bg-muted text-foreground'
-                    }`}
-                    style={
-                      day.isToday
-                        ? { backgroundColor: 'var(--accent-color)', color: '#ffffff' }
-                        : undefined
-                    }
-                  >
-                    {format(day.date, 'd')}
+            {/* Week date row — 36px circles; completed #1a1a1a/#333; today transparent + orange; future #0d0d0d/#1a1a1a/#333 */}
+            <div className="grid grid-cols-7 gap-2 mb-6 place-items-center">
+              {weekDays.map(day => {
+                const isCompleted = day.ratio > 0 && !day.isToday;
+                const isFuture = !day.isToday && !isCompleted;
+                return (
+                  <div key={day.dateStr} className="flex flex-col items-center gap-1.5">
+                    <span
+                      className="text-[10px] font-medium font-body"
+                      style={{
+                        color: day.isToday ? 'var(--accent-color)' : isFuture ? '#333333' : '#ffffff',
+                      }}
+                    >
+                      {day.label}
+                    </span>
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-body tabular-nums border transition-colors"
+                      style={{
+                        backgroundColor: day.isToday ? 'transparent' : isFuture ? '#0d0d0d' : '#1a1a1a',
+                        borderWidth: day.isToday ? 2 : 1,
+                        borderColor: day.isToday ? 'var(--accent-color)' : isFuture ? '#1a1a1a' : '#333333',
+                        color: day.isToday ? 'var(--accent-color)' : isFuture ? '#333333' : '#ffffff',
+                        fontWeight: day.isToday ? 600 : 500,
+                      }}
+                    >
+                      {format(day.date, 'd')}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Stats */}
+            {/* Stats — #111111 bg, percentage white, label #666666 */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="p-4 rounded-2xl bg-card shadow-card border border-border">
-                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-foreground tabular-nums">
+              <div
+                className="p-4 rounded-[20px] border"
+                style={{ backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }}
+              >
+                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-white tabular-nums">
                   {String(rate7)}%
                 </p>
-                <p className="text-xs mt-1 font-body text-muted-foreground">
+                <p className="text-xs mt-1 font-body" style={{ color: '#666666' }}>
                   Last 7 days
                 </p>
               </div>
-              <div className="p-4 rounded-2xl bg-card shadow-card border border-border">
-                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-foreground tabular-nums">
+              <div
+                className="p-4 rounded-[20px] border"
+                style={{ backgroundColor: '#111111', borderColor: '#222222', borderWidth: 1 }}
+              >
+                <p className="text-2xl font-body font-semibold min-h-[2.5rem] flex items-center text-white tabular-nums">
                   {String(rate30)}%
                 </p>
-                <p className="text-xs mt-1 font-body text-muted-foreground">
+                <p className="text-xs mt-1 font-body" style={{ color: '#666666' }}>
                   Last 30 days
                 </p>
               </div>
             </div>
 
-            {/* Per-habit rings — 30-day completion rate */}
+            {/* By habit — ring track #1a1a1a, fill white; habit name white */}
             <div className="space-y-3">
-              <h3 className="font-body font-semibold text-lg">By habit</h3>
-              <p className="text-xs text-muted-foreground font-body">
+              <h3 className="font-body font-semibold text-lg text-white">By habit</h3>
+              <p className="text-xs font-body" style={{ color: '#666666' }}>
                 30-day completion, one ring per habit
               </p>
               <div className="grid grid-cols-2 gap-4">
@@ -264,8 +269,6 @@ export default function Progress() {
                   const radius = 54;
                   const circumference = 2 * Math.PI * radius;
                   const offset = circumference * (1 - pct / 100);
-                  const colorToken = HABIT_COLOR_MAP[habit.color];
-                  const strokeColor = `hsl(${colorToken})`;
 
                   const explicitKey = habit.icon?.startsWith('lucide:')
                     ? habit.icon.slice(7)
@@ -280,7 +283,13 @@ export default function Progress() {
                   return (
                     <div
                       key={habit.id}
-                      className="p-4 rounded-2xl bg-card shadow-card border border-border flex flex-col items-center"
+                      className="p-4 rounded-[20px] border flex flex-col items-center"
+                      style={{
+                        backgroundColor: '#111111',
+                        borderColor: '#222222',
+                        borderWidth: 1,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      }}
                     >
                       <div
                         className="relative"
@@ -288,25 +297,26 @@ export default function Progress() {
                       >
                         <motion.svg
                           viewBox="0 0 120 120"
-                          className="absolute inset-0"
+                          className="absolute inset-0 drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]"
                           initial={false}
                         >
+                          {/* Track */}
                           <circle
                             cx="60"
                             cy="60"
                             r={radius}
                             fill="none"
-                            stroke={strokeColor}
-                            strokeOpacity={0.1}
+                            stroke="#1a1a1a"
                             strokeWidth={12}
                             strokeLinecap="round"
                           />
+                          {/* Fill — white only */}
                           <motion.circle
                             cx="60"
                             cy="60"
                             r={radius}
                             fill="none"
-                            stroke={strokeColor}
+                            stroke="#ffffff"
                             strokeWidth={12}
                             strokeLinecap="round"
                             strokeDasharray={circumference}
@@ -323,14 +333,14 @@ export default function Progress() {
                         </motion.svg>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="flex flex-col items-center gap-1">
-                            <HabitIcon className="w-5 h-5" style={{ color: strokeColor }} />
-                            <span className="text-sm font-semibold font-body tabular-nums">
+                            <HabitIcon className="w-5 h-5 text-white" />
+                            <span className="text-sm font-semibold font-body tabular-nums text-white">
                               {pct}%
                             </span>
                           </div>
                         </div>
                       </div>
-                      <p className="mt-3 text-sm font-medium font-body text-center line-clamp-2">
+                      <p className="mt-3 text-sm font-medium font-body text-center line-clamp-2 text-white">
                         {habit.title}
                       </p>
                     </div>
