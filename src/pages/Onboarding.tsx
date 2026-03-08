@@ -65,12 +65,14 @@ export default function Onboarding() {
       <div className="flex flex-col items-center gap-6">
         <img src={welcomeIllustration} alt="Growing plants" className="w-64 h-64 object-contain" />
         <h1 className="font-body font-semibold text-[2.4rem] leading-tight text-center text-foreground">
-          Small habits.
+          Your habits.
           <br />
-          Remarkable results.
+          Your identity.
+          <br />
+          Your life.
         </h1>
         <p className="text-muted-foreground text-center max-w-xs font-body text-sm">
-          Build the life you want, one tiny habit at a time.
+          Build the person you want to be, one habit at a time.
         </p>
       </div>
       <button

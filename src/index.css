@@ -6,78 +6,18 @@
 
 @layer base {
   :root {
-    /* Warm editorial palette */
-    --cream-color: #faf7f2;
-    --ink-color: #1c1917;
-    --muted-color: #a8a097;
-    --accent-color: #c96a3a;
-    --accent-light-color: #f0e6dc;
-    --card-color: #ffffff;
-    --card-border-color: #ede9e3;
+    /* Dark theme only — background #0a0a0a */
+    --background: 0 0% 4%; /* #0a0a0a */
+    --foreground: 0 0% 96%;
+
+    --cream-color: #1a1a1a;
+    --ink-color: #f5f5f5;
+    --card-color: #1a1a1a;
+    --card-border-color: hsl(0 0% 18%);
     --success-color: #5c7a5f;
+    --muted-color: #b3b3b3;
 
-    /* Tailwind token mappings */
-    --background: 40 32% 96%; /* approx cream */
-    --foreground: 30 14% 12%; /* ink */
-
-    --card: 0 0% 100%;
-    --card-foreground: 30 14% 12%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 30 14% 12%;
-
-    --primary: 20 58% 50%; /* accent */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 32 25% 96%;
-    --secondary-foreground: 30 14% 20%;
-
-    --muted: 30 10% 72%;
-    --muted-foreground: 30 10% 45%;
-
-    --accent: 20 58% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 32 24% 92%; /* card border */
-    --input: 32 24% 92%;
-    --ring: 20 58% 50%;
-
-    --radius: 1rem;
-
-    /* Habit colors (mapped into warm palette; kept for compatibility) */
-    --habit-amber: 20 58% 50%;
-    --habit-sage: 132 17% 43%; /* success sage-ish */
-    --habit-coral: 20 58% 50%;
-    --habit-sky: 210 20% 60%;
-    --habit-violet: 270 15% 55%;
-    --habit-rose: 350 30% 60%;
-    --habit-teal: 160 20% 45%;
-    --habit-slate: 220 10% 45%;
-
-    /* Custom */
-    --gradient-warm: linear-gradient(135deg, #c96a3a, #e39a6a);
-    --gradient-sage: linear-gradient(135deg, #5c7a5f, #7d947f);
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
-    --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.08);
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 0 0% 6%; /* #0f0f0f */
-    --foreground: 0 0% 96%; /* #f5f5f5 */
-
-    --card: 0 0% 10%; /* #1a1a1a */
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 96%;
 
     --popover: 0 0% 10%;
@@ -92,7 +32,6 @@
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 70%;
 
-    /* Accent surfaces in dark: use tint so selected chips/cards stay readable */
     --accent-color: hsl(25 92% 56%);
     --accent-light-color: hsl(25 92% 56% / 0.28);
 
@@ -106,7 +45,17 @@
     --input: 0 0% 18%;
     --ring: 25 92% 56%;
 
-    /* Keep habit tokens consistent across themes */
+    --radius: 1rem;
+
+    --habit-amber: 20 58% 50%;
+    --habit-sage: 132 17% 43%;
+    --habit-coral: 20 58% 50%;
+    --habit-sky: 210 20% 60%;
+    --habit-violet: 270 15% 55%;
+    --habit-rose: 350 30% 60%;
+    --habit-teal: 160 20% 45%;
+    --habit-slate: 220 10% 45%;
+
     --gradient-warm: linear-gradient(135deg, hsl(25 92% 56%), hsl(15 85% 62%));
     --gradient-sage: linear-gradient(135deg, hsl(150 35% 50%), hsl(170 40% 55%));
     --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.45);
@@ -128,16 +77,21 @@
     @apply border-border;
   }
 
+  #root {
+    min-height: 100vh;
+    background-color: #0a0a0a;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
-    background-color: var(--cream-color);
+    background-color: #0a0a0a;
     position: relative;
   }
 
   ::selection {
     background-color: var(--accent-light-color);
-    color: var(--ink-color);
+    color: hsl(var(--foreground));
   }
 
   body::before {
@@ -200,5 +154,213 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Today header: cinematic loop — slow move + pose visibility (28s total) */
+  .header-cinematic-move {
+    animation: header-cinematic-move 28s linear infinite;
+  }
+  .header-pose-walk {
+    opacity: 0;
+    animation: header-pose-walk 28s linear infinite;
+  }
+  .header-pose-sprint {
+    opacity: 0;
+    animation: header-pose-sprint 28s linear infinite;
+  }
+  .header-pose-exhausted {
+    opacity: 0;
+    animation: header-pose-exhausted 28s linear infinite;
+  }
+  .header-pose-sit {
+    opacity: 0;
+    animation: header-pose-sit 28s linear infinite;
+  }
+  @keyframes header-cinematic-move {
+    0% { transform: translate(270px, 114px); }
+    35% { transform: translate(90px, 114px); }
+    47% { transform: translate(270px, 114px); }
+    82% { transform: translate(250px, 114px); }
+    94% { transform: translate(250px, 114px); }
+    100% { transform: translate(270px, 114px); }
+  }
+  @keyframes header-pose-walk {
+    0%, 34.99% { opacity: 1; }
+    35%, 93.99% { opacity: 0; }
+    94%, 100% { opacity: 1; }
+  }
+  @keyframes header-pose-sprint {
+    0%, 34.99% { opacity: 0; }
+    35%, 46.99% { opacity: 1; }
+    47%, 100% { opacity: 0; }
+  }
+  @keyframes header-pose-exhausted {
+    0%, 46.99% { opacity: 0; }
+    47%, 81.99% { opacity: 1; }
+    82%, 100% { opacity: 0; }
+  }
+  @keyframes header-pose-sit {
+    0%, 81.99% { opacity: 0; }
+    82%, 93.99% { opacity: 1; }
+    94%, 100% { opacity: 0; }
+  }
+  /* Walking pose: bob, stick, arm, legs (slow tired pace) */
+  .header-hiker-bob {
+    animation: header-hiker-bob 2.8s ease-in-out infinite;
+  }
+  .header-hiker-stick {
+    transform-origin: 1px 1.2px;
+    animation: header-hiker-stick 2.8s ease-in-out infinite;
+  }
+  .header-hiker-arm-swing {
+    transform-origin: 0 0;
+    animation: header-hiker-arm-swing 2.8s ease-in-out infinite;
+  }
+  .header-hiker-leg-left {
+    transform-origin: 0 0;
+    animation: header-hiker-leg-left 2.8s ease-in-out infinite;
+  }
+  .header-hiker-leg-right {
+    transform-origin: 0 0;
+    animation: header-hiker-leg-right 2.8s ease-in-out infinite;
+  }
+  @keyframes header-hiker-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(1px); }
+  }
+  @keyframes header-hiker-stick {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes header-hiker-arm-swing {
+    0%, 100% { transform: rotate(-14deg); }
+    50% { transform: rotate(10deg); }
+  }
+  @keyframes header-hiker-leg-left {
+    0%, 100% { transform: rotate(-16deg); }
+    50% { transform: rotate(14deg); }
+  }
+  @keyframes header-hiker-leg-right {
+    0%, 100% { transform: rotate(14deg); }
+    50% { transform: rotate(-16deg); }
+  }
+  /* Sprint: slow alternating leg pump */
+  .header-sprint-leg-left {
+    transform-origin: 0 0;
+    animation: header-sprint-leg 0.6s ease-in-out infinite;
+  }
+  .header-sprint-leg-right {
+    transform-origin: 0 0;
+    animation: header-sprint-leg 0.6s ease-in-out infinite 0.3s;
+  }
+  @keyframes header-sprint-leg {
+    0%, 100% { transform: rotate(-18deg); }
+    50% { transform: rotate(18deg); }
+  }
+  /* Exhausted: very slow leg drag */
+  .header-exhausted-leg-l {
+    transform-origin: 0 0;
+    animation: header-exhausted-leg 2.6s ease-in-out infinite;
+  }
+  .header-exhausted-leg-r {
+    transform-origin: 0 0;
+    animation: header-exhausted-leg 2.6s ease-in-out infinite 1.3s;
+  }
+  @keyframes header-exhausted-leg {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(4deg); }
+  }
+  .header-rest-z {
+    animation: header-rest-z 2.2s ease-in-out infinite;
+  }
+  @keyframes header-rest-z {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.95; }
+  }
+  /* Celebration: stick figure at right, jumping for joy for 3s */
+  .header-celebration-wrap {
+    transform: translate(270px, 114px);
+    animation: header-celebration-bounce 3s ease-in-out 1;
+  }
+  .header-celebration-jump {
+    animation: header-celebration-jump 3s ease-in-out 1;
+  }
+  @keyframes header-celebration-bounce {
+    0% { transform: translate(270px, 114px) translateY(0); }
+    12% { transform: translate(270px, 114px) translateY(-16px); }
+    24% { transform: translate(270px, 114px) translateY(0); }
+    36% { transform: translate(270px, 114px) translateY(-14px); }
+    48% { transform: translate(270px, 114px) translateY(0); }
+    60% { transform: translate(270px, 114px) translateY(-11px); }
+    72% { transform: translate(270px, 114px) translateY(0); }
+    84% { transform: translate(270px, 114px) translateY(-7px); }
+    100% { transform: translate(270px, 114px) translateY(0); }
+  }
+  @keyframes header-celebration-jump {
+    0%, 100% { transform: scaleY(1) scaleX(1); }
+    12% { transform: scaleY(0.96) scaleX(1.04); }
+    24% { transform: scaleY(1.02) scaleX(0.98); }
+    36% { transform: scaleY(0.96) scaleX(1.04); }
+    48% { transform: scaleY(1.02) scaleX(0.98); }
+    60% { transform: scaleY(0.97) scaleX(1.03); }
+    72% { transform: scaleY(1.01) scaleX(0.99); }
+    84% { transform: scaleY(0.98) scaleX(1.02); }
+    100% { transform: scaleY(1) scaleX(1); }
+  }
+  /* Spark screen: walking stick figure in place (reuses header keyframes) */
+  .spark-figure-bob {
+    animation: header-hiker-bob 2.8s ease-in-out infinite;
+  }
+  .spark-figure-leg-left {
+    transform-origin: 0 0;
+    animation: header-hiker-leg-left 2.8s ease-in-out infinite;
+  }
+  .spark-figure-leg-right {
+    transform-origin: 0 0;
+    animation: header-hiker-leg-right 2.8s ease-in-out infinite;
+  }
+  .spark-figure-arm-swing {
+    transform-origin: 0 0;
+    animation: header-hiker-arm-swing 2.8s ease-in-out infinite;
+  }
+  /* Spark response: running figure — fast sprint (arms + legs), then shuttle, then exit */
+  .spark-run-figure {
+    width: 20px;
+    height: 20px;
+  }
+  .spark-run-leg-left {
+    transform-origin: 0 0;
+    animation: spark-sprint-leg 0.25s ease-in-out infinite;
+  }
+  .spark-run-leg-right {
+    transform-origin: 0 0;
+    animation: spark-sprint-leg 0.25s ease-in-out infinite 0.125s;
+  }
+  .spark-run-arm-left {
+    transform-origin: 0 0;
+    animation: spark-sprint-arm 0.25s ease-in-out infinite;
+  }
+  .spark-run-arm-right {
+    transform-origin: 0 0;
+    animation: spark-sprint-arm 0.25s ease-in-out infinite 0.125s;
+  }
+  @keyframes spark-sprint-leg {
+    0%, 100% { transform: rotate(-28deg); }
+    50% { transform: rotate(28deg); }
+  }
+  @keyframes spark-sprint-arm {
+    0%, 100% { transform: rotate(-20deg); }
+    50% { transform: rotate(20deg); }
+  }
+  .spark-run-track {
+    position: relative;
+    overflow: hidden;
+  }
+  .spark-input-bounce {
+    animation: spark-input-bounce 0.8s ease-in-out infinite;
+  }
+  @keyframes spark-input-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
   }
 }

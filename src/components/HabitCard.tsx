@@ -38,6 +38,8 @@ interface HabitCardProps {
   streak: number;
   completed: boolean;
   skipped: boolean;
+  /** Last 7 days completion (oldest to newest) for mini streak squares */
+  last7DaysCompletion?: boolean[];
   showIdentityWhisper?: boolean;
   identityStatement?: string;
   onComplete: () => void;
@@ -51,6 +53,7 @@ export default function HabitCard({
   streak,
   completed,
   skipped,
+  last7DaysCompletion,
   showIdentityWhisper,
   identityStatement,
   onComplete,
@@ -189,6 +192,18 @@ export default function HabitCard({
               <p className="font-body text-[12px] text-muted-foreground truncate">
                 {habit.timeOfDay} · {habit.location}
               </p>
+              {last7DaysCompletion && last7DaysCompletion.length > 0 && (
+                <div className="flex items-center gap-0.5 mt-1.5" aria-hidden>
+                  {last7DaysCompletion.map((filled, i) => (
+                    <div
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
+                        filled ? 'bg-[var(--success-color)]' : 'bg-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
               {showIdentityWhisper && identityStatement?.trim() && (
                 <p className="mt-0.5 text-[13px] text-muted-foreground/80 italic leading-snug font-display">
                   To become{' '}

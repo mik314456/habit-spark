@@ -1,13 +1,11 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
-import { useTheme } from 'next-themes';
 import { useApp } from '@/contexts/AppContext';
 import TabBar from '@/components/TabBar';
 
 export default function Settings() {
   const { state, resetApp, updateHabit, updateIdentityStatement, setSoundEnabled } = useApp();
-  const { theme, setTheme } = useTheme();
   const [identityDraft, setIdentityDraft] = useState(state.identityStatement ?? '');
 
   const activeHabits = useMemo(
@@ -36,22 +34,15 @@ export default function Settings() {
                 <div>
                   <p className="text-sm font-medium font-body">Dark mode</p>
                   <p className="text-[11px] text-muted-foreground font-body">
-                    Switch between light and dark.
+                    Always on. The app uses a dark theme.
                   </p>
                 </div>
-                <button
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
-                    theme === 'dark' ? 'bg-primary' : 'bg-muted'
-                  }`}
-                  aria-label="Toggle dark mode"
+                <div
+                  className="w-11 h-6 rounded-full flex items-center px-0.5 bg-primary cursor-default"
+                  aria-label="Dark mode always on"
                 >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-background shadow-sm transform transition-transform ${
-                      theme === 'dark' ? 'translate-x-5' : ''
-                    }`}
-                  />
-                </button>
+                  <div className="w-5 h-5 rounded-full bg-background shadow-sm transform translate-x-5" />
+                </div>
               </div>
             </div>
           </section>

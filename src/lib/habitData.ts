@@ -225,8 +225,21 @@ export function saveState(state: AppState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/** Returns today's date in local time as yyyy-MM-dd (for consistent comparisons). */
 export function getToday(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Formats a Date as local yyyy-MM-dd. */
+export function toLocalDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 export function getStreak(habitId: string, logs: HabitLog[]): number {
@@ -240,7 +253,8 @@ export function getStreak(habitId: string, logs: HabitLog[]): number {
 
   let streak = 0;
   const today = getToday();
-  const checkDate = new Date(today);
+  const [y, m, d] = today.split('-').map(Number);
+  const checkDate = new Date(y, m - 1, d);
 
   // If today is not logged, start from yesterday
   if (!habitLogs.includes(today)) {
@@ -248,7 +262,7 @@ export function getStreak(habitId: string, logs: HabitLog[]): number {
   }
 
   while (true) {
-    const dateStr = checkDate.toISOString().split('T')[0];
+    const dateStr = toLocalDateString(checkDate);
     if (habitLogs.includes(dateStr)) {
       streak++;
       checkDate.setDate(checkDate.getDate() - 1);

@@ -2,7 +2,7 @@ import TabBar from '@/components/TabBar';
 import { motion } from 'framer-motion';
 
 const lessons = [
-  { id: '1', title: 'The Power of Atomic Habits', subtitle: 'Why tiny changes lead to remarkable results', readTime: 3, category: 'Habits' },
+  { id: '1', title: 'The Power of Small Habits', subtitle: 'Why tiny changes compound into lasting change', readTime: 3, category: 'Habits' },
   { id: '2', title: 'Identity-Based Habits', subtitle: 'Change who you are, not what you do', readTime: 4, category: 'Identity' },
   { id: '3', title: 'The 2-Minute Rule', subtitle: 'Make it so easy you can\'t say no', readTime: 2, category: 'Systems' },
   { id: '4', title: 'Habit Stacking', subtitle: 'Link new habits to existing ones', readTime: 3, category: 'Systems' },
