@@ -4,6 +4,13 @@ import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import TabBar from '@/components/TabBar';
 
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 /** Walking stick figure for Spark screen header — same style as home, in place. */
 function SparkHeaderFigure() {
   const stroke = 1.15;
@@ -31,39 +38,6 @@ function SparkHeaderFigure() {
         <g transform={`translate(0.8, ${hipY})`}>
           <line x1="0" y1="0" x2="3.5" y2="10.5" strokeWidth={stroke} className="spark-figure-leg-right" />
         </g>
-      </g>
-    </svg>
-  );
-}
-
-const SPARK_FIGURE_WIDTH_PX = 20;
-
-/** Running stick figure ~20px, white, sprint pose — for loading/response card. */
-function RunningStickFigure() {
-  const stroke = 0.9;
-  return (
-    <svg
-      viewBox="-5 -6 14 20"
-      className="spark-run-figure text-white opacity-95"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={stroke}
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="0" cy="-4" r="2.2" />
-      <line x1="0" y1="-1.8" x2="0.5" y2="4" strokeWidth={stroke} />
-      <g transform="translate(0.5, -0.5)">
-        <line x1="0" y1="0" x2="-3" y2="2.5" strokeWidth={stroke} className="spark-run-arm-left" />
-      </g>
-      <g transform="translate(0.5, -0.5)">
-        <line x1="0" y1="0" x2="3" y2="2.5" strokeWidth={stroke} className="spark-run-arm-right" />
-      </g>
-      <g transform="translate(0.5, 4)">
-        <line x1="0" y1="0" x2="-2.5" y2="6" strokeWidth={stroke} className="spark-run-leg-left" />
-      </g>
-      <g transform="translate(0.5, 4)">
-        <line x1="0" y1="0" x2="2.5" y2="6" strokeWidth={stroke} className="spark-run-leg-right" />
       </g>
     </svg>
   );
@@ -114,7 +88,40 @@ Examples of how you talk:
 
 Keep responses under 4 sentences usually. Be Spark.`;
 
-async function callCoachApi(systemPrompt: string, userPrompt: string): Promise<string> {
+const QUICK_REPLIES = [
+  'Motivate me',
+  'Roast me',
+  'What should I do today?',
+  'I missed a day',
+  'Give me a challenge',
+  "I'm bored",
+];
+
+/** Build the habit-context block injected into the system prompt so Spark always has current data. */
+function buildHabitSystemContext(params: {
+  identity: string;
+  habitNamesWithStreaks: string;
+  yesterdayCompleted: string;
+  yesterdayMissed: string;
+}): string {
+  const { identity, habitNamesWithStreaks, yesterdayCompleted, yesterdayMissed } = params;
+  return `
+CURRENT USER CONTEXT (use this on every response):
+- Who they're becoming (identity): ${identity}
+- Their habits and current streaks: ${habitNamesWithStreaks}
+- Yesterday they completed: ${yesterdayCompleted}
+- Yesterday they missed: ${yesterdayMissed}
+
+RULES when responding:
+- Reference this data specifically. Never give generic advice — tie your reply to their actual habits, streaks, and identity.
+- If they completed ALL their habits yesterday: be reluctantly impressed. Acknowledge it with sarcastic praise.
+- If they missed ANY habits yesterday: call out the specific habit(s) by name. Don't be vague — say which one(s) they skipped.`;
+}
+
+async function callCoachApi(
+  systemPrompt: string,
+  messages: { role: 'user' | 'assistant'; content: string }[],
+): Promise<string> {
   const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
   if (!apiKey) {
     throw new Error('Missing Anthropic API key. Set VITE_ANTHROPIC_API_KEY.');
@@ -132,7 +139,7 @@ async function callCoachApi(systemPrompt: string, userPrompt: string): Promise<s
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages,
     }),
   });
 
@@ -147,20 +154,81 @@ async function callCoachApi(systemPrompt: string, userPrompt: string): Promise<s
   return text;
 }
 
+/** User-facing message for any API or network failure. Never show raw errors. */
+const SPARK_ERROR_MESSAGE = "Even I have off days. Try again.";
+
 const WORD_DELAY_MS = 55;
+
+/** Exact same class for every Spark bubble — full width, left-aligned row. */
+const SPARK_BUBBLE_CLASS =
+  'w-full rounded-2xl px-4 py-2.5 bg-[#111111] border border-[#1e1e1e] text-foreground/95';
+/** Exact same class for every user bubble — full width, right-aligned row. */
+const USER_BUBBLE_CLASS =
+  'w-full rounded-2xl px-4 py-2.5 bg-[#1a1a1a] border border-[#2a2a2a] text-foreground';
+
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/** Dynamic greeting: time of day + habit data, under 12 words, Spark voice. */
+function getSparkGreeting(
+  hour: number,
+  completedToday: number,
+  totalHabits: number,
+  bestStreak: number,
+): string {
+  const isMorning = hour >= 5 && hour < 12;
+  const isAfternoon = hour >= 12 && hour < 17;
+  const isEvening = hour >= 17 && hour < 22;
+  const allDone = totalHabits > 0 && completedToday >= totalHabits;
+  const incomplete = totalHabits > 0 && completedToday < totalHabits;
+
+  if (totalHabits === 0) {
+    return "No habits yet. Let's fix that. Or don't. Your call.";
+  }
+  if (allDone && isEvening) {
+    return "Look at you. You actually did the thing. I'm reluctantly proud.";
+  }
+  if (allDone && isMorning) {
+    return "Done already? Show-off. I'm almost impressed. Almost.";
+  }
+  if (allDone && isAfternoon) {
+    return "Halfway through the day and you're already done. Okay, fine.";
+  }
+  if (incomplete && isMorning) {
+    return "Morning. Your habits didn't sleep in. Get moving.";
+  }
+  if (incomplete && isEvening) {
+    return "Evening. Still time to fix today. Get to it.";
+  }
+  if (incomplete && isAfternoon) {
+    return "Afternoon. Your habits are waiting. So am I.";
+  }
+  if (bestStreak >= 3) {
+    return "That streak's almost respectable. Don't blow it now.";
+  }
+  if (bestStreak >= 1) {
+    return "You've got a streak going. No pressure. Okay, some pressure.";
+  }
+  if (hour >= 22 || hour < 5) {
+    return "You're up late. Tomorrow's habits are already judging you.";
+  }
+  return "Hey. You're here. That's step one. Don't waste it.";
+}
 
 export default function Coach() {
   const { state, getHabitStreak } = useApp();
-  const [followupQuestion, setFollowupQuestion] = useState('');
-  const [followupAnswer, setFollowupAnswer] = useState<string | null>(null);
+  const [conversation, setConversation] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingResponse, setPendingResponse] = useState<string | null>(null);
   const [displayedAnswer, setDisplayedAnswer] = useState('');
-  const [followupLoading, setFollowupLoading] = useState(false);
-  const [followupError, setFollowupError] = useState<string | null>(null);
   const [figureExiting, setFigureExiting] = useState(false);
   const [figureExited, setFigureExited] = useState(false);
-  const [responseTimestamp, setResponseTimestamp] = useState<Date | null>(null);
   const wordIndexRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeHabits = useMemo(
     () => state.habits.filter(h => !h.archived),
@@ -174,48 +242,56 @@ export default function Coach() {
       .join('; ');
   }, [activeHabits, getHabitStreak]);
 
-  const yesterdaysCompletions = useMemo(() => {
+  const todayStr = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);
+  const completedTodayCount = useMemo(() => {
+    return state.habitLogs.filter(l => l.date === todayStr && l.completed).length;
+  }, [state.habitLogs, todayStr]);
+  const bestStreak = useMemo(
+    () => (activeHabits.length === 0 ? 0 : Math.max(0, ...activeHabits.map(h => getHabitStreak(h.id)))),
+    [activeHabits, getHabitStreak],
+  );
+
+  const sparkGreeting = useMemo(() => {
+    const hour = new Date().getHours();
+    return getSparkGreeting(hour, completedTodayCount, activeHabits.length, bestStreak);
+  }, [completedTodayCount, activeHabits.length, bestStreak]);
+
+  const { yesterdayCompleted, yesterdayMissed } = useMemo(() => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yStr = format(yesterday, 'yyyy-MM-dd');
     const completedIds = new Set(
       state.habitLogs.filter(l => l.date === yStr && l.completed).map(l => l.habitId),
     );
-    if (completedIds.size === 0) return 'none';
-    return activeHabits
-      .filter(h => completedIds.has(h.id))
-      .map(h => h.title)
-      .join(', ');
+    const completed = activeHabits.filter(h => completedIds.has(h.id)).map(h => h.title);
+    const missed = activeHabits.filter(h => !completedIds.has(h.id)).map(h => h.title);
+    return {
+      yesterdayCompleted: completed.length === 0 ? 'none' : completed.join(', '),
+      yesterdayMissed: missed.length === 0 ? 'none' : missed.join(', '),
+    };
   }, [activeHabits, state.habitLogs]);
 
-  const showResponseCard = followupLoading || followupAnswer != null || followupError != null;
-  const isStreamingWords = followupAnswer != null && displayedAnswer !== followupAnswer;
-  const showRunningFigure = followupLoading || isStreamingWords || figureExiting;
-
-  const totalWords = useMemo(
-    () => (followupAnswer ? followupAnswer.trim().split(/\s+/).filter(Boolean).length : 0),
-    [followupAnswer],
+  const habitSystemContext = useMemo(
+    () =>
+      buildHabitSystemContext({
+        identity: state.identityStatement?.trim() || 'not set',
+        habitNamesWithStreaks: habitsAndStreaks,
+        yesterdayCompleted,
+        yesterdayMissed,
+      }),
+    [state.identityStatement, habitsAndStreaks, yesterdayCompleted, yesterdayMissed],
   );
-  const currentWordCount = useMemo(
-    () => displayedAnswer.trim().split(/\s+/).filter(Boolean).length,
-    [displayedAnswer],
-  );
-  const sparkPosition = followupLoading
-    ? 0
-    : totalWords > 0
-      ? Math.min(100, ((currentWordCount + 0.5) / totalWords) * 100)
-      : 0;
-  const sparkLeftStyle =
-    figureExiting
-      ? { left: '100%', transition: 'left 0.4s ease-out' }
-      : {
-          left: `calc(${sparkPosition}% - ${(SPARK_FIGURE_WIDTH_PX * sparkPosition) / 100}px)`,
-          transition: 'left 0.06s linear',
-        };
 
+  const fullSystemPrompt = useMemo(
+    () => SPARK_SYSTEM_PROMPT + habitSystemContext,
+    [habitSystemContext],
+  );
+
+  const isStreaming = pendingResponse != null && displayedAnswer !== pendingResponse;
+  const showRunningFigure = loading || isStreaming || figureExiting;
   const startWordReveal = useCallback(() => {
-    if (!followupAnswer) return;
-    const words = followupAnswer.split(/(\s+)/);
+    if (!pendingResponse) return;
+    const words = pendingResponse.trim().split(/\s+/).filter(Boolean);
     wordIndexRef.current = 0;
     setDisplayedAnswer('');
 
@@ -224,20 +300,20 @@ export default function Coach() {
         setFigureExiting(true);
         return;
       }
-      setDisplayedAnswer(prev => prev + words[wordIndexRef.current]);
+      setDisplayedAnswer(prev => prev + (prev.length ? ' ' : '') + words[wordIndexRef.current]);
       wordIndexRef.current += 1;
       timerRef.current = setTimeout(tick, WORD_DELAY_MS);
     };
     timerRef.current = setTimeout(tick, WORD_DELAY_MS);
-  }, [followupAnswer]);
+  }, [pendingResponse]);
 
   useEffect(() => {
-    if (!followupAnswer || displayedAnswer !== '') return;
+    if (!pendingResponse || displayedAnswer !== '') return;
     startWordReveal();
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [followupAnswer, startWordReveal]);
+  }, [pendingResponse, startWordReveal]);
 
   useEffect(() => {
     if (!figureExiting) return;
@@ -248,127 +324,180 @@ export default function Coach() {
     return () => clearTimeout(t);
   }, [figureExiting]);
 
-  const handleAskCoach = async () => {
-    const question = followupQuestion.trim();
-    if (!question) return;
-    setFollowupLoading(true);
-    setFollowupError(null);
-    setFollowupAnswer(null);
+  useEffect(() => {
+    if (figureExited && pendingResponse) {
+      setConversation(prev => [
+        ...prev,
+        { id: generateId(), role: 'assistant', content: pendingResponse, timestamp: new Date() },
+      ]);
+      setPendingResponse(null);
+      setDisplayedAnswer('');
+      setFigureExited(false);
+    }
+  }, [figureExited, pendingResponse]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, [conversation, loading, pendingResponse, displayedAnswer]);
+
+  const sendMessage = useCallback(async () => {
+    const text = inputValue.trim();
+    if (!text) return;
+
+    const userMsg: ChatMessage = {
+      id: generateId(),
+      role: 'user',
+      content: text,
+      timestamp: new Date(),
+    };
+    setConversation(prev => [...prev, userMsg]);
+    setInputValue('');
+    setLoading(true);
+    setError(null);
+    setPendingResponse(null);
     setDisplayedAnswer('');
     setFigureExited(false);
     setFigureExiting(false);
-    setResponseTimestamp(new Date());
-    try {
-      const identity = state.identityStatement?.trim() || 'not set';
-      const baseContext = `My identity goal: ${identity}. My habits and streaks: ${habitsAndStreaks}. Yesterday I completed: ${yesterdaysCompletions}.`;
-      const userPrompt = `${baseContext} Follow-up question: ${question}`;
-      const answer = await callCoachApi(SPARK_SYSTEM_PROMPT, userPrompt);
-      setFollowupAnswer(answer);
-    } catch (err) {
-      setFollowupError(err instanceof Error ? err.message : 'Failed to get response from Spark.');
-    } finally {
-      setFollowupLoading(false);
-    }
-  };
 
-  const hasTyped = followupQuestion.trim().length > 0;
+    try {
+      const apiMessages = [
+        ...conversation.map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: text },
+      ];
+      const reply = await callCoachApi(fullSystemPrompt, apiMessages);
+      setPendingResponse(reply);
+    } catch {
+      setError(SPARK_ERROR_MESSAGE);
+    } finally {
+      setLoading(false);
+    }
+  }, [inputValue, conversation, fullSystemPrompt]);
+
+  const lastMessage = conversation[conversation.length - 1];
+  const showQuickReplies = lastMessage?.role === 'assistant' && !loading && !pendingResponse;
+  const quickReplyChips = useMemo(
+    () => [...QUICK_REPLIES].sort(() => Math.random() - 0.5).slice(0, 3),
+    [showQuickReplies],
+  );
+
+  const hasTyped = inputValue.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto px-5 pt-12">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-2">
+    <div className="min-h-screen bg-background flex flex-col pb-24">
+      <div className="max-w-md mx-auto w-full flex flex-col flex-1 min-h-0 px-4">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 pt-6 pb-2 flex-shrink-0"
+        >
           <SparkHeaderFigure />
           <h1 className="text-2xl">Spark</h1>
         </motion.div>
-        <p className="text-muted-foreground text-sm mb-6">
-          Hey, I&apos;m Spark. Let&apos;s build something great.
+        <p className="text-muted-foreground text-sm mb-3 flex-shrink-0">
+          {sparkGreeting}
         </p>
 
-        {/* Response card — only when we have sent a message (loading or answer) */}
-        {showResponseCard && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-6 rounded-2xl border p-5"
-            style={{ backgroundColor: '#111111', borderColor: '#1e1e1e' }}
-          >
-            {(followupLoading || followupAnswer || followupError) && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-[10px] uppercase mb-3"
-                style={{ color: '#444444', letterSpacing: '0.15em' }}
+        <div
+          ref={scrollRef}
+          className={`overflow-y-auto min-h-0 space-y-4 pb-4 ${conversation.length > 0 || showRunningFigure ? 'flex-1' : ''}`}
+        >
+          {conversation.map(msg => (
+            <div
+              key={msg.id}
+              className={msg.role === 'user' ? 'flex flex-row-reverse' : 'flex'}
+            >
+              <div
+                className={msg.role === 'user' ? USER_BUBBLE_CLASS : SPARK_BUBBLE_CLASS}
               >
-                From Spark
-              </motion.p>
-            )}
-
-            {/* Spark runs left→right; text trails behind him word by word */}
-            {showRunningFigure && (
-              <div className="spark-run-track min-h-[20px] h-8 flex items-center mb-2">
-                <div
-                  className="absolute top-0 flex items-center"
-                  style={sparkLeftStyle}
-                >
-                  <RunningStickFigure />
-                </div>
+                <p className="text-sm font-body whitespace-pre-wrap break-words" style={{ lineHeight: 1.6 }}>
+                  {msg.content}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {format(msg.timestamp, 'h:mm a')}
+                </p>
               </div>
-            )}
+            </div>
+          ))}
 
-            {followupAnswer && (
-              <>
-                <div className="text-sm text-foreground/95 font-body" style={{ lineHeight: 1.7 }}>
+          {showRunningFigure && (
+            <div className="flex">
+              <div className={SPARK_BUBBLE_CLASS}>
+                <p className="text-sm font-body whitespace-pre-wrap break-words" style={{ lineHeight: 1.7 }}>
                   {figureExited ? (
-                    followupAnswer
+                    pendingResponse
                   ) : (
                     <span>
                       {displayedAnswer}
                       <span className="animate-pulse">|</span>
                     </span>
                   )}
-                </div>
-                {figureExited && responseTimestamp && (
-                  <p className="text-xs mt-3 text-muted-foreground">
-                    {format(responseTimestamp, 'h:mm a')}
-                  </p>
-                )}
-              </>
-            )}
+                </p>
+              </div>
+            </div>
+          )}
 
-            {followupError && (
-              <p className="text-sm text-destructive mt-2">{followupError}</p>
-            )}
-          </motion.div>
-        )}
+          {error && (
+            <p className="text-sm text-destructive px-1">{error}</p>
+          )}
+        </div>
 
-        {/* Ask Spark — input */}
-        <div className="rounded-2xl border border-border p-4 space-y-3" style={{ backgroundColor: '#111111', borderColor: '#1e1e1e' }}>
-          <div className="relative">
-            <textarea
-              rows={3}
-              className="w-full rounded-xl bg-background border border-border px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
-              placeholder="Ask Spark anything..."
-              value={followupQuestion}
-              onChange={e => setFollowupQuestion(e.target.value)}
-            />
-            {hasTyped && !followupLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute bottom-2 right-2 pointer-events-none"
-              >
-                <InputBounceFigure />
-              </motion.div>
-            )}
-          </div>
-          <button
-            onClick={handleAskCoach}
-            disabled={followupLoading || !followupQuestion.trim()}
-            className="w-full py-2.5 rounded-2xl gradient-warm text-primary-foreground text-sm font-semibold shadow-elevated disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="flex-shrink-0 space-y-2 pt-2">
+          {showQuickReplies && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap gap-2"
+            >
+              {quickReplyChips.map(label => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setInputValue(label)}
+                  className="px-3 py-1.5 rounded-full text-xs font-body border border-border/60 bg-muted/30 text-foreground/90 hover:bg-muted/50 transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </motion.div>
+          )}
+
+          <div
+            className="rounded-2xl border p-3 space-y-2"
+            style={{ backgroundColor: '#111111', borderColor: '#1e1e1e' }}
           >
-            {followupLoading ? 'Thinking…' : 'Ask Spark'}
-          </button>
+            <div className="relative">
+              <textarea
+                rows={2}
+                className="w-full rounded-xl bg-background border border-border px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                placeholder="Ask Spark anything..."
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+              />
+              {hasTyped && !loading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute bottom-2 right-2 pointer-events-none"
+                >
+                  <InputBounceFigure />
+                </motion.div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={sendMessage}
+              disabled={loading || !inputValue.trim()}
+              className="w-full py-2.5 rounded-2xl gradient-warm text-primary-foreground text-sm font-semibold shadow-elevated disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Thinking…' : 'Ask Spark'}
+            </button>
+          </div>
         </div>
       </div>
       <TabBar />

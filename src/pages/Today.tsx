@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { format, subDays, differenceInMinutes, differenceInHours, isSameDay } from 'date-fns';
+import { format, subDays, differenceInMinutes, differenceInHours, isSameDay, startOfWeek, addDays } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,7 +10,6 @@ import {
   Sun,
   CloudSun,
   Moon,
-  Sparkles,
   Flame,
   CheckSquare,
   Calendar,
@@ -32,10 +31,22 @@ import AddHabitModal from '@/components/AddHabitModal';
 import MilestoneCelebrationModal from '@/components/MilestoneCelebrationModal';
 import HabitDetailSheet from '@/components/HabitDetailSheet';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
-import { Habit } from '@/lib/habitData';
+import { Habit, type HabitColor } from '@/lib/habitData';
 import type { ComponentType } from 'react';
 
-const COACH_DAILY_KEY = 'coach-daily-message-v1';
+/** Habit color to Tailwind bg class for week grid cells */
+const HABIT_BG: Record<HabitColor, string> = {
+  amber: 'bg-habit-amber',
+  sage: 'bg-habit-sage',
+  coral: 'bg-habit-coral',
+  sky: 'bg-habit-sky',
+  violet: 'bg-habit-violet',
+  rose: 'bg-habit-rose',
+  teal: 'bg-habit-teal',
+  slate: 'bg-habit-slate',
+};
+
+const SPARK_QUIP_CACHE_KEY = 'spark-today-quip-v1';
 
 /** Motivational lines used for the bottom strip (fallback when no habit-matched lines). */
 const MOTIVATIONAL_LINES = [
@@ -182,6 +193,60 @@ function getTimeContext(hour: number): string {
   return 'Rest is part of the process.';
 }
 
+/** Fetch one punchy Spark quip for Today banner (cached per day). */
+async function fetchSparkQuip(params: {
+  hour: number;
+  bestStreak: number;
+  completedToday: number;
+  totalHabits: number;
+  habitNames: string[];
+}): Promise<string> {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
+  if (!apiKey) return getTimeContext(params.hour);
+
+  const { hour, bestStreak, completedToday, totalHabits, habitNames } = params;
+  const timeLabel = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 17 ? 'afternoon' : hour >= 17 && hour < 22 ? 'evening' : 'night';
+
+  const systemPrompt = `You are Spark — a stick-figure habit coach. You must NEVER say anything positive, encouraging, or motivational. No "great job", no "you're doing amazing", no "keep it up". Every quip must be snarky, sarcastic, or a backhanded compliment. If the user has done 0 habits say something like "Zero. Bold strategy." If all done say something like "Done already? Fine. Whatever." Roast first, respect second. Maximum 12 words. One line only. No quotes or preamble.
+
+Examples:
+- 0 habits: "Zero. Bold strategy." or "You've done 0 habits. Impressive commitment to nothing."
+- One done: "One habit done. The bar was low and you cleared it."
+- All done: "Done already? Fine. Whatever." or "Both done? Don't get cocky. Tomorrow exists."
+- Day 1 streak: "Day 1. Everyone starts Day 1. Few survive Day 2."
+- Streak going: "Still going? Weird. Most people quit by now."
+
+Output nothing but the single line.`;
+
+  const userPrompt = `Time: ${timeLabel} (${hour}:00). Best streak: ${bestStreak} days. Completed today: ${completedToday}/${totalHabits} habits. Habit names: ${habitNames.length ? habitNames.join(', ') : 'none'}.`;
+
+  const res = await fetch('/api/anthropic/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 60,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+
+  if (!res.ok) return getTimeContext(hour);
+
+  const json = (await res.json()) as { content?: { type: string; text?: string }[] };
+  const text = json.content?.find(c => c.type === 'text')?.text?.trim();
+  if (!text) return getTimeContext(hour);
+
+  const oneLine = text.split(/\n/)[0].trim();
+  const words = oneLine.split(/\s+/).slice(0, 12);
+  return words.join(' ');
+}
+
 /** Identity-style motivational lines; some keyed by habit keywords. */
 const MOTIVATIONAL_BY_HABIT: { match: RegExp | string; line: string }[] = [
   { match: /meditate|calm|mind/i, line: 'Calm people meditate daily.' },
@@ -199,7 +264,8 @@ export default function Today() {
   const [milestoneHabitId, setMilestoneHabitId] = useState<string | null>(null);
   const [milestoneValue, setMilestoneValue] = useState<number | null>(null);
   const [detailHabitId, setDetailHabitId] = useState<string | null>(null);
-  const [coachPreview, setCoachPreview] = useState<string | null>(null);
+  const [sparkQuip, setSparkQuip] = useState<string | null>(null);
+  const [sparkQuipLoading, setSparkQuipLoading] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const prevCompletedRef = useRef<number | null>(null);
 
@@ -293,19 +359,18 @@ export default function Today() {
             ? 'Good evening'
             : 'Good night';
 
-  // Today's Focus: next habit coming up today
-  const nextUpHabit = useMemo(() => {
-    if (activeHabits.length === 0) return null;
-    const n = new Date();
-    const withTime = activeHabits
+  // Next up: up to 3 incomplete habits for today, ordered by scheduled time ascending (all incomplete, not just future times)
+  const nextUpHabits = useMemo(() => {
+    if (activeHabits.length === 0) return [];
+    const incomplete = activeHabits.filter(h => !isHabitCompletedToday(h.id));
+    const withTime = incomplete
       .map(h => ({
         habit: h,
         at: todayAtTime(h.reminderTime ?? h.timeOfDay ?? '09:00'),
       }))
-      .filter(({ at }) => at > n)
       .sort((a, b) => a.at.getTime() - b.at.getTime());
-    return withTime[0] ?? null;
-  }, [activeHabits]);
+    return withTime.slice(0, 3);
+  }, [activeHabits, isHabitCompletedToday]);
 
   // Best streak across habits (for Weather row + Quick Stats)
   const bestStreak = useMemo(
@@ -329,30 +394,6 @@ export default function Today() {
     return Math.max(0, days);
   }, [activeHabits]);
 
-  // Last 7 days for mini calendar (green / orange / empty)
-  const weekDays = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = subDays(now, 6 - i);
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const total = activeHabits.length;
-      const completed = (Array.isArray(habitLogs) ? habitLogs : []).filter(
-        l => l.date === dateStr && l.completed,
-      ).length;
-      let dot: 'full' | 'partial' | 'empty' = 'empty';
-      if (total > 0) {
-        if (completed >= total) dot = 'full';
-        else if (completed > 0) dot = 'partial';
-      }
-      return {
-        date,
-        dateStr,
-        label: format(date, 'EEE').charAt(0),
-        isToday: isSameDay(date, now),
-        dot,
-      };
-    });
-  }, [activeHabits.length, habitLogs, now]);
-
   // Per-habit last 7 days completion (oldest to newest) for mini streak on cards
   const last7DaysByHabit = useMemo(() => {
     const out: Record<string, boolean[]> = {};
@@ -372,25 +413,84 @@ export default function Today() {
     return out;
   }, [activeHabits, habitLogs, now]);
 
-  // Coach preview: first sentence from cached daily message
+  // Per-habit current week (Mon–Sun) completion for week dots on cards
+  const weekCompletionByHabit = useMemo(() => {
+    const out: Record<string, { completed: boolean; isToday: boolean; isFuture: boolean }[]> = {};
+    const logs = Array.isArray(habitLogs) ? habitLogs : [];
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const todayStr = format(now, 'yyyy-MM-dd');
+    activeHabits.forEach(h => {
+      const arr: { completed: boolean; isToday: boolean; isFuture: boolean }[] = [];
+      for (let i = 0; i < 7; i++) {
+        const d = addDays(weekStart, i);
+        const dateStr = format(d, 'yyyy-MM-dd');
+        const isToday = dateStr === todayStr;
+        const isFuture = dateStr > todayStr;
+        const completed = logs.some(
+          l => l.habitId === h.id && l.date === dateStr && l.completed,
+        );
+        arr.push({ completed, isToday, isFuture });
+      }
+      out[h.id] = arr;
+    });
+    return out;
+  }, [activeHabits, habitLogs, now]);
+
+  // Spark quip for Today banner: fetch once per day, cache by date
   useEffect(() => {
-    try {
-      const raw = typeof window !== 'undefined' ? localStorage.getItem(COACH_DAILY_KEY) : null;
-      if (!raw) {
-        setCoachPreview(null);
-        return;
-      }
-      const parsed = JSON.parse(raw) as { date?: string; message?: string };
-      if (parsed.date !== todayLocal || !parsed.message) {
-        setCoachPreview(null);
-        return;
-      }
-      const first = parsed.message.match(/[^.!?]+[.!?]?\s*/)?.[0]?.trim();
-      setCoachPreview(first ? `${first.replace(/[.!?]\s*$/, '')}…` : null);
-    } catch {
-      setCoachPreview(null);
+    if (activeHabits.length === 0) {
+      setSparkQuip(null);
+      return;
     }
-  }, [todayLocal]);
+
+    // 1) Clear quip cache immediately so a fresh (snarky) quip is fetched (removes old motivational cache).
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(SPARK_QUIP_CACHE_KEY);
+    }
+
+    const tryCache = () => {
+      // 3) In development, skip cache so we re-fetch on every app load.
+      if (import.meta.env.DEV) return false;
+      try {
+        const raw = typeof window !== 'undefined' ? localStorage.getItem(SPARK_QUIP_CACHE_KEY) : null;
+        if (!raw) return false;
+        const parsed = JSON.parse(raw) as { date?: string; quip?: string };
+        if (parsed.date === todayLocal && parsed.quip) {
+          setSparkQuip(parsed.quip);
+          return true;
+        }
+      } catch {
+        // ignore
+      }
+      return false;
+    };
+
+    if (tryCache()) return;
+
+    setSparkQuipLoading(true);
+    const hour = new Date().getHours();
+    fetchSparkQuip({
+      hour,
+      bestStreak,
+      completedToday: completedCount,
+      totalHabits: activeHabits.length,
+      habitNames: activeHabits.map(h => h.title || ''),
+    })
+      .then(quip => {
+        setSparkQuip(quip);
+        try {
+          localStorage.setItem(SPARK_QUIP_CACHE_KEY, JSON.stringify({ date: todayLocal, quip }));
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        setSparkQuip(null);
+      })
+      .finally(() => {
+        setSparkQuipLoading(false);
+      });
+  }, [todayLocal, activeHabits, bestStreak, completedCount]);
 
   // Milestone celebrations (3, 7, 14, 21, 30, 50, 100)
   useEffect(() => {
@@ -556,7 +656,7 @@ export default function Today() {
           </div>
         </motion.div>
 
-        {/* Today's Focus — next habit + countdown */}
+        {/* Next Up — up to 3 upcoming incomplete habits, stacked rows */}
         {activeHabits.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
@@ -564,49 +664,58 @@ export default function Today() {
             className="mb-5 rounded-2xl p-4 border border-[#222222]"
             style={{ backgroundColor: '#111111' }}
           >
-            {nextUpHabit ? (
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#1a1a1a]"
-                  style={{ color: 'var(--accent-color)' }}
-                >
-                  <TodayHabitIcon habit={nextUpHabit.habit} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] text-white/60 uppercase tracking-wide font-body">
-                    Next up
-                  </p>
-                  <p className="font-body font-medium text-[15px] truncate text-white">
-                    {nextUpHabit.habit.title} at {nextUpHabit.habit.timeOfDay}
-                  </p>
-                  <p className="text-[13px] text-white/70 font-body">
-                    {countdownTo(nextUpHabit.at)}
-                  </p>
-                </div>
+            <p className="text-[11px] text-white/60 uppercase tracking-wide font-body mb-3">
+              Next up
+            </p>
+            {nextUpHabits.length > 0 ? (
+              <div className="divide-y divide-[#222222]">
+                {nextUpHabits.map(({ habit }) => (
+                  <div
+                    key={habit.id}
+                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#1a1a1a]"
+                      style={{ color: 'var(--accent-color)' }}
+                    >
+                      <TodayHabitIcon habit={habit} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body font-medium text-[15px] truncate text-white">
+                        {habit.title}
+                      </p>
+                      <p className="text-[13px] text-white/70 font-body truncate">
+                        {habit.timeOfDay} · {habit.location || '—'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="font-body text-white/80 text-sm py-1">
-                All habits scheduled for later today.
+                No more habits left for today.
               </p>
             )}
           </motion.div>
         )}
 
-        {/* Weather + Context row */}
+        {/* Weather + Spark quip row — live quip fetched once per day, wraps to 2 lines if needed */}
         {activeHabits.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-3 mb-5 py-2 px-3 rounded-xl bg-muted/50 border border-border/50"
+            className="flex items-center gap-3 mb-5 py-2.5 px-3 rounded-xl bg-muted/50 border border-border/50"
           >
-            <TimeOfDayIcon hour={hour} className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 text-muted-foreground">
+              <TimeOfDayIcon hour={hour} className="w-5 h-5" />
+            </div>
             {bestStreak > 0 && (
-              <span className="text-xs font-medium text-foreground font-body">
+              <span className="text-xs font-medium text-foreground font-body flex-shrink-0">
                 Day {bestStreak}
               </span>
             )}
-            <span className="flex-1 text-xs text-muted-foreground font-body truncate">
-              {getTimeContext(hour)}
+            <span className="flex-1 min-w-0 text-xs text-muted-foreground font-body leading-snug py-0.5">
+              {sparkQuipLoading ? '…' : sparkQuip ?? getTimeContext(hour)}
             </span>
           </motion.div>
         )}
@@ -645,7 +754,6 @@ export default function Today() {
                   streak={getHabitStreak(habit.id)}
                   completed={isHabitCompletedToday(habit.id)}
                   skipped={isHabitSkippedToday(habit.id)}
-                  last7DaysCompletion={last7DaysByHabit[habit.id]}
                   showIdentityWhisper={!!habit.why}
                   identityStatement={cleanedIdentity}
                   onComplete={() => {
@@ -690,76 +798,62 @@ export default function Today() {
           </motion.div>
         )}
 
-        {/* Weekly mini calendar strip */}
+        {/* Week grid at the end: M–S header, then one row per habit (habit color = logged that day) */}
         {activeHabits.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex justify-between items-center gap-1 mb-6 py-3 px-2 rounded-xl bg-muted/30 border border-border/40"
+            className="mb-6 py-3 px-4 rounded-xl bg-muted/30 border border-border/40"
           >
-            {weekDays.map(({ date, label, isToday, dot }) => (
-              <div
-                key={date.toISOString()}
-                className="flex flex-col items-center gap-1"
-              >
-                <span
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-medium font-body ${
-                    isToday
-                      ? 'ring-2 ring-[var(--accent-color)] text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {label}
-                </span>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    dot === 'full'
-                      ? 'bg-[var(--success-color)]'
-                      : dot === 'partial'
-                        ? 'bg-[var(--accent-color)]'
-                        : 'bg-muted'
-                  }`}
-                />
-              </div>
-            ))}
+            {/* Header row: day letters — 11px, font-weight 500, equal column spacing */}
+            <div className="grid grid-cols-7 gap-4 mb-1.5">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, i) => {
+                const weekData = weekCompletionByHabit[activeHabits[0]?.id];
+                const day = weekData?.[i];
+                const isToday = day?.isToday ?? false;
+                const isFuture = day?.isFuture ?? false;
+                return (
+                  <span
+                    key={i}
+                    className={`text-[15px] font-medium font-body text-center ${
+                      isToday ? 'text-foreground font-semibold' : isFuture ? 'text-muted-foreground/60' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {letter}
+                  </span>
+                );
+              })}
+            </div>
+            {/* One row per habit: 6px dots, same style as habit card week dots */}
+            {activeHabits.map(habit => {
+              const week = weekCompletionByHabit[habit.id];
+              const bgClass = HABIT_BG[habit.color];
+              return (
+                <div key={habit.id} className="grid grid-cols-7 gap-4 mt-2.5 first:mt-0">
+                  {week && week.length === 7
+                    ? week.map((day, i) => (
+                        <span
+                          key={i}
+                          className="flex justify-center"
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              day.isFuture
+                                ? 'bg-muted/50'
+                                : day.completed
+                                  ? bgClass
+                                  : 'border border-muted-foreground/60 bg-transparent'
+                            }`}
+                          />
+                        </span>
+                      ))
+                    : null}
+                </div>
+              );
+            })}
           </motion.div>
         )}
 
-        {/* Spark preview card */}
-        {activeHabits.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-6 rounded-xl bg-muted/40 border border-border/50 p-4"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-[var(--accent-color)]" />
-              <span className="text-xs font-medium text-muted-foreground font-body uppercase tracking-wide">
-                Spark
-              </span>
-            </div>
-            {coachPreview ? (
-              <>
-                <p className="text-sm text-foreground/90 font-body line-clamp-2 mb-2">
-                  {coachPreview}
-                </p>
-                <Link
-                  to="/coach"
-                  className="text-xs font-medium text-[var(--accent-color)] hover:underline font-body"
-                >
-                  Read more
-                </Link>
-              </>
-            ) : (
-              <Link
-                to="/coach"
-                className="text-sm text-muted-foreground font-body hover:text-foreground"
-              >
-                Get today&apos;s message from Spark →
-              </Link>
-            )}
-          </motion.div>
-        )}
       </div>
 
       {/* Bottom motivational strip (above tab bar) */}

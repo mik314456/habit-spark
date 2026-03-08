@@ -38,8 +38,6 @@ interface HabitCardProps {
   streak: number;
   completed: boolean;
   skipped: boolean;
-  /** Last 7 days completion (oldest to newest) for mini streak squares */
-  last7DaysCompletion?: boolean[];
   showIdentityWhisper?: boolean;
   identityStatement?: string;
   onComplete: () => void;
@@ -53,7 +51,6 @@ export default function HabitCard({
   streak,
   completed,
   skipped,
-  last7DaysCompletion,
   showIdentityWhisper,
   identityStatement,
   onComplete,
@@ -172,18 +169,18 @@ export default function HabitCard({
             opacity: { duration: 0.2 },
           }}
         />
-        <div className="relative z-10 flex items-center gap-4 p-4">
-          {/* Icon + content */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="relative z-10 flex items-start gap-3 p-4">
+          {/* Left column: icon + name, time, identity — hard max-width so it never overlaps right column */}
+          <div className="flex items-start gap-3 flex-1 min-w-0 max-w-[calc(100%-72px)]">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: 'var(--accent-light-color)' }}
             >
               <HabitIcon className="w-4 h-4" style={{ color: 'var(--accent-color)' }} />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 min-w-[25ch]">
               <p
-                className={`font-body text-[15px] font-medium ${
+                className={`font-body text-[15px] font-medium truncate ${
                   completed ? 'line-through opacity-50' : ''
                 } ${skipped ? 'opacity-50' : ''}`}
               >
@@ -192,20 +189,8 @@ export default function HabitCard({
               <p className="font-body text-[12px] text-muted-foreground truncate">
                 {habit.timeOfDay} · {habit.location}
               </p>
-              {last7DaysCompletion && last7DaysCompletion.length > 0 && (
-                <div className="flex items-center gap-0.5 mt-1.5" aria-hidden>
-                  {last7DaysCompletion.map((filled, i) => (
-                    <div
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-sm flex-shrink-0 ${
-                        filled ? 'bg-[var(--success-color)]' : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
               {showIdentityWhisper && identityStatement?.trim() && (
-                <p className="mt-0.5 text-[13px] text-muted-foreground/80 italic leading-snug font-display">
+                <p className="mt-0.5 text-sm text-muted-foreground/80 italic leading-snug font-display break-words overflow-visible">
                   To become{' '}
                   <span className="font-medium not-italic text-foreground/90">
                     {identityStatement.trim()}
@@ -216,20 +201,31 @@ export default function HabitCard({
             </div>
           </div>
 
-        <div className="flex items-center gap-2">
-          {/* Streak badge */}
-          {streak > 0 && (
-            <motion.div
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-body font-medium bg-[color:var(--accent-color)] text-white"
-              animate={justCompleted ? { scale: [1, 1.3, 1] } : {}}
-              transition={{ duration: 0.2 }}
-            >
-              <Flame className="w-3.5 h-3.5" />
-              {streak}
-            </motion.div>
-          )}
+          {/* Right column: streak only */}
+          <div className="w-[64px] flex-shrink-0 flex flex-col items-center justify-center gap-2">
+            {streak >= 1 &&
+              (() => {
+                const tier = streak >= 30 ? 'gold' : streak >= 7 ? 'large' : 'small';
+                const flameSize = tier === 'gold' ? 'w-6 h-6' : tier === 'large' ? 'w-5 h-5' : 'w-3.5 h-3.5';
+                const wrapperClass =
+                  tier === 'gold'
+                    ? 'flex items-center justify-center gap-1 rounded-full bg-amber-500/90 text-amber-950 streak-glow-gold px-2 py-1'
+                    : 'flex items-center justify-center gap-1 rounded-full text-[11px] font-medium bg-[color:var(--accent-color)] text-white px-2 py-1';
+                const flameColor = tier === 'gold' ? 'text-amber-950' : 'text-white';
+                return (
+                  <motion.div
+                    className={wrapperClass}
+                    animate={justCompleted ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Flame className={`${flameSize} flex-shrink-0 ${flameColor}`} />
+                    <span className={`font-body text-[11px] ${tier === 'gold' ? 'text-[12px] font-bold' : ''}`}>{streak}</span>
+                  </motion.div>
+                );
+              })()}
+          </div>
 
-          {/* Checkmark on completion (right side) */}
+          {/* Checkmark on completion */}
           <div className="relative w-6 h-6 flex-shrink-0">
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
@@ -244,7 +240,7 @@ export default function HabitCard({
           {/* More menu */}
           <button
             type="button"
-            className="ml-1 p-1 rounded-full hover:bg-muted text-muted-foreground"
+            className="p-1 rounded-full hover:bg-muted text-muted-foreground flex-shrink-0"
             onPointerDown={e => e.stopPropagation()}
             onPointerUp={e => e.stopPropagation()}
             onPointerLeave={e => e.stopPropagation()}
@@ -276,7 +272,6 @@ export default function HabitCard({
             ))}
           </div>
         )}
-        </div>
       </motion.div>
 
       {actionMenuOpen && (

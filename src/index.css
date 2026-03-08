@@ -363,4 +363,23 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-3px); }
   }
+  /* Streak badge tiers: glow and pulse for achievement feel */
+  .streak-glow {
+    box-shadow: 0 0 12px hsl(25 92% 56% / 0.4);
+  }
+  .streak-pulse {
+    animation: streak-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes streak-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px hsl(25 92% 56% / 0.4); }
+    50% { opacity: 0.95; box-shadow: 0 0 18px hsl(25 92% 56% / 0.6); }
+  }
+  .streak-glow-gold {
+    box-shadow: 0 0 14px hsl(45 70% 55% / 0.6);
+    animation: streak-glow-gold 2s ease-in-out infinite;
+  }
+  @keyframes streak-glow-gold {
+    0%, 100% { box-shadow: 0 0 14px hsl(45 70% 55% / 0.5); }
+    50% { box-shadow: 0 0 22px hsl(45 70% 55% / 0.75); }
+  }
 }

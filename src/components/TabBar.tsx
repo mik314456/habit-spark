@@ -1,22 +1,24 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Sun, BarChart2, Settings as SettingsIcon } from 'lucide-react';
 
-/** Stick figure icon for Spark tab: head, body, two legs in walking pose. */
+/** Stick figure icon for Spark tab: centered, symmetrical. Head, vertical torso, arms 45° down, legs 45° out. */
 function SparkTabIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.2"
+      strokeWidth="1.25"
       strokeLinecap="round"
       className={className}
       aria-hidden
     >
       <circle cx="12" cy="5" r="2.5" />
       <line x1="12" y1="7.5" x2="12" y2="13" />
-      <line x1="12" y1="13" x2="9" y2="20" />
-      <line x1="12" y1="13" x2="15" y2="19" />
+      <line x1="12" y1="8" x2="9" y2="11" />
+      <line x1="12" y1="8" x2="15" y2="11" />
+      <line x1="12" y1="13" x2="8" y2="20" />
+      <line x1="12" y1="13" x2="16" y2="20" />
     </svg>
   );
 }
