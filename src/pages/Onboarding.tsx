@@ -27,6 +27,7 @@ export default function Onboarding() {
   const [habitAction, setHabitAction] = useState('');
   const [habitTime, setHabitTime] = useState('07:00');
   const [habitLocation, setHabitLocation] = useState('');
+  const [customHabitTitle, setCustomHabitTitle] = useState('');
 
   const next = () => {
     setDirection(1);
@@ -56,6 +57,7 @@ export default function Onboarding() {
   };
 
   const identityChips = ['A healthy person', 'A focused person', 'A creative person', 'A calm person', 'A strong person'];
+  const popularTemplateIds = ['1', '2', '3', '4', '5', '6'];
 
   const screens = [
     // Screen 0: Light, premium welcome — warm cream, editorial, Spark as hero
@@ -75,7 +77,7 @@ export default function Onboarding() {
       />
 
       <div className="relative z-10 flex-1 flex items-center justify-center px-5">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center -translate-y-10">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center -translate-y-16">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -83,7 +85,10 @@ export default function Onboarding() {
             className="text-[12px] sm:text-[13px] uppercase tracking-[0.26em] font-medium mb-8"
             style={{ color: '#7a7a7a', fontWeight: 500 }}
           >
-            Habit Spark
+            Habit{' '}
+            <span style={{ color: 'var(--accent-color)' }}>
+              Spark
+            </span>
           </motion.p>
 
           <motion.div
@@ -100,16 +105,16 @@ export default function Onboarding() {
                 filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
               }}
             >
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[138px] h-[138px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
+            <svg
+              viewBox="-7 -22 14 44"
+              className="w-[138px] h-[138px]"
+              fill="none"
+              stroke="#0d0d0d"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
                 <circle cx="0" cy="-14" r="5" />
                 <line x1="0" y1="-9" x2="0" y2="8" />
                 {/* Left arm - relaxed, still */}
@@ -151,11 +156,6 @@ export default function Onboarding() {
             >
               Show up.
             </p>
-            <div
-              className="mt-4 mb-4 h-px w-14"
-              style={{ backgroundColor: 'rgba(249,115,22,0.28)' }}
-              aria-hidden
-            />
             <motion.p
               className="text-[13px] text-center leading-snug px-2"
               initial={{ opacity: 0, y: 8 }}
@@ -170,7 +170,7 @@ export default function Onboarding() {
       </div>
 
       <motion.div
-        className="fixed inset-x-0 bottom-0 flex justify-center px-5"
+        className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -180,7 +180,7 @@ export default function Onboarding() {
           onClick={next}
           className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white"
           style={{
-            backgroundColor: '#0d0d0d',
+            backgroundColor: 'var(--accent-color)',
             letterSpacing: '0.04em',
             boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
           }}
@@ -193,64 +193,157 @@ export default function Onboarding() {
       </motion.div>
     </motion.div>,
 
-    // Screen 1: Identity
-    <motion.div key="identity" className="flex flex-col h-full px-6 py-12">
-      <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="font-body font-semibold text-[2.1rem] leading-snug mb-3 text-foreground">
-        Who do you want to become?
-      </h1>
-      <p className="text-muted-foreground mb-8 font-body text-sm">
-        Your identity shapes your habits. Start with who you want to be.
-      </p>
-      <input
-        type="text"
-        value={identity}
-        onChange={e => setIdentity(e.target.value.slice(0, 60))}
-        placeholder="e.g. A healthy person"
-        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-4"
-      />
-      <div className="flex flex-wrap gap-2 mb-auto">
-        {identityChips.map(chip => (
-          <button
-            key={chip}
-            onClick={() => setIdentity(chip)}
-            className={`px-4 py-2 rounded-full text-[13px] font-body border transition-all ${
-              identity === chip
-                ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)] dark:text-white'
-                : 'border-[color:var(--card-border-color)] text-muted-foreground hover:border-[color:var(--accent-color)]/60'
-            }`}
-          >
-            {chip}
-          </button>
-        ))}
-      </div>
-      <button
-        onClick={next}
-        disabled={!identity.trim()}
-        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Continue
+    // Screen 1: Identity — refined to match welcome aesthetic
+    <motion.div key="identity" className="flex flex-col h-full px-5 pt-10 pb-6">
+      <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
+        ← Back
       </button>
+
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col">
+          <p className="text-[11px] uppercase tracking-[0.26em] font-medium text-muted-foreground mb-4">
+            Step 1 · Identity
+          </p>
+
+          <h1
+            className="font-display text-left font-light"
+            style={{
+              fontSize: 'clamp(26px, 6.3vw, 30px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+            }}
+          >
+            Who do you want to become?
+          </h1>
+
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
+              <svg
+                viewBox="-7 -22 14 44"
+                className="w-[22px] h-[22px]"
+                fill="none"
+                stroke="#0d0d0d"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="0" cy="-14" r="4.2" />
+                <line x1="0" y1="-9.5" x2="0" y2="6" />
+                <line x1="0" y1="-1" x2="-4.5" y2="5" />
+                <line x1="0" y1="-1" x2="4.5" y2="5" />
+                <line x1="0" y1="6" x2="-3.5" y2="15" />
+                <line x1="0" y1="6" x2="3.5" y2="15" />
+              </svg>
+            </div>
+            <p className="text-[14px] text-muted-foreground italic font-body">
+              Spark: “C’mon. Pick one version of you.”
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
+              I want to be…
+            </label>
+            <input
+              type="text"
+              value={identity}
+              onChange={e => setIdentity(e.target.value.slice(0, 60))}
+              placeholder="e.g. a healthy person, a focused person"
+              className="w-full bg-transparent p-0 pb-1 border-0 focus:outline-none focus:ring-0 text-[15px] font-body text-foreground placeholder:text-muted-foreground/70"
+            />
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {identityChips.map(chip => (
+              <button
+                key={chip}
+                onClick={() => setIdentity(chip)}
+                className={`px-4 py-2 rounded-full text-[13px] font-body border transition-all ${
+                  identity === chip
+                    ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)] dark:text-white'
+                    : 'border-[color:var(--card-border-color)] bg-card text-muted-foreground hover:border-[color:var(--accent-color)]/60'
+                }`}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-auto pt-8">
+            <button
+              onClick={next}
+              disabled={!identity.trim()}
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+              }}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
     </motion.div>,
 
-    // Screen 2: Habit Picker
-    <motion.div key="picker" className="flex h-screen flex-col px-6 pt-12">
-      <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">← Back</button>
-      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-2 text-foreground">
-        Pick your first habit
-      </h1>
-      <p className="text-muted-foreground mb-6 text-sm font-body">
-        Start with one. You can always add more later.
-      </p>
-      <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-4">
-        {HABIT_CATEGORIES.map(cat => {
-          const templates = HABIT_TEMPLATES.filter(t => t.category === cat);
-          if (templates.length === 0) return null;
-          return (
-            <div key={cat} className="mb-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 font-body">{cat}</h3>
+    // Screen 2: Habit Picker — refined to match welcome + identity
+    <motion.div key="picker" className="flex h-screen flex-col px-5 pt-10 pb-4">
+      <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
+        ← Back
+      </button>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col pb-6">
+          <p className="text-[11px] uppercase tracking-[0.26em] font-medium text-muted-foreground mb-3">
+            Step 2 · Habit
+          </p>
+
+          <h1
+            className="font-display text-left font-light"
+            style={{
+              fontSize: 'clamp(24px, 5.8vw, 28px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+            }}
+          >
+            Pick your first habit.
+          </h1>
+
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
+              <svg
+                viewBox="-7 -22 14 44"
+                className="w-[22px] h-[22px]"
+                fill="none"
+                stroke="#0d0d0d"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="0" cy="-14" r="4.2" />
+                <line x1="0" y1="-9.5" x2="0" y2="6" />
+                <line x1="0" y1="-1" x2="-4.5" y2="5" />
+                <line x1="0" y1="-1" x2="4.5" y2="5" />
+                <line x1="0" y1="6" x2="-3.5" y2="15" />
+                <line x1="0" y1="6" x2="3.5" y2="15" />
+              </svg>
+            </div>
+            <p className="text-[14px] text-muted-foreground italic font-body">
+              Spark: “One habit. Not twelve. We’re being realistic.”
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-6">
+            {/* Popular first */}
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3 font-body">
+                Most popular
+              </h3>
               <div className="grid grid-cols-2 gap-3">
-                {templates.map(t => {
+                {HABIT_TEMPLATES.filter(t => popularTemplateIds.includes(t.id)).map(t => {
                   const isSelected = selectedTemplate?.id === t.id;
                   return (
                     <button
@@ -260,6 +353,7 @@ export default function Onboarding() {
                         setHabitAction(t.smallVersion);
                         setHabitTime(t.defaultTime);
                         setHabitLocation(t.defaultLocation);
+                        setCustomHabitTitle('');
                       }}
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
                         isSelected
@@ -289,96 +383,319 @@ export default function Onboarding() {
                 })}
               </div>
             </div>
-          );
-        })}
-      </div>
-      <div className="flex-shrink-0 py-4 bg-background">
-        <button
-          onClick={next}
-          disabled={!selectedTemplate}
-          className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Continue
-        </button>
+
+            {/* Rest by category */}
+            {HABIT_CATEGORIES.map(cat => {
+              const templates = HABIT_TEMPLATES.filter(
+                t => t.category === cat && !popularTemplateIds.includes(t.id),
+              );
+              if (templates.length === 0) return null;
+              return (
+                <div key={cat} className="mb-1">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3 font-body">
+                    {cat}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {templates.map(t => {
+                      const isSelected = selectedTemplate?.id === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            setSelectedTemplate(t);
+                            setHabitAction(t.smallVersion);
+                            setHabitTime(t.defaultTime);
+                            setHabitLocation(t.defaultLocation);
+                            setCustomHabitTitle('');
+                          }}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
+                            isSelected
+                              ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card dark:text-white'
+                              : 'border-[color:var(--card-border-color)] bg-card shadow-card hover:border-[color:var(--accent-color)]/60'
+                          }`}
+                        >
+                          {(() => {
+                            const Icon = getHabitIconByTitle(t.title);
+                            return (
+                              <Icon
+                                className={`w-6 h-6 ${
+                                  isSelected
+                                    ? 'text-[color:var(--accent-color)] dark:text-white'
+                                    : 'text-muted-foreground'
+                                }`}
+                              />
+                            );
+                          })()}
+                          <span
+                            className={`text-sm font-body font-medium ${
+                              isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : ''
+                            }`}
+                          >
+                            {t.title}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
+              Or write your own habit
+            </label>
+            <input
+              type="text"
+              value={customHabitTitle}
+              onChange={e => {
+                const value = e.target.value.slice(0, 60);
+                setCustomHabitTitle(value);
+                if (value.trim()) {
+                  const customTemplate = {
+                    id: 'custom',
+                    title: value,
+                    suggestion: value,
+                    smallVersion: value,
+                    category: 'Custom',
+                    defaultTime: habitTime,
+                    defaultLocation: habitLocation || 'Anywhere',
+                    icon: 'Custom',
+                    color: '#f97316',
+                  } as HabitTemplate;
+                  setSelectedTemplate(customTemplate);
+                  setHabitAction(value);
+                } else {
+                  setSelectedTemplate(null);
+                  setHabitAction('');
+                }
+              }}
+              placeholder="e.g. read 1 page, stretch for 2 minutes"
+              className="w-full bg-transparent p-0 pb-1 border-0 focus:outline-none focus:ring-0 text-[15px] font-body text-foreground placeholder:text-muted-foreground/70"
+            />
+          </div>
+          <div className="mt-6 pt-4 pb-2">
+            <button
+              onClick={next}
+              disabled={
+                !selectedTemplate ||
+                (selectedTemplate && selectedTemplate.id === 'custom' && !customHabitTitle.trim())
+              }
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+              }}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
       </div>
     </motion.div>,
 
-    // Screen 3: Habit Sizing
-    <motion.div key="sizing" className="flex flex-col h-full px-6 py-12">
-      <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-3 text-foreground">
-        Make it tiny
-      </h1>
-      <p className="text-muted-foreground mb-2 font-body text-sm">What's the 2-minute version?</p>
-      <p className="text-[13px] text-muted-foreground/80 mb-8 font-body">
-        "{selectedTemplate?.suggestion}" → "{selectedTemplate?.smallVersion}"
-      </p>
-      <div className="flex items-center gap-3 mb-4">
-        {selectedTemplate && (
-          (() => {
-            const Icon = getHabitIconByTitle(selectedTemplate.title);
-            return <Icon className="w-7 h-7 text-muted-foreground" />;
-          })()
-        )}
-        <span className="font-body text-xl font-medium">{selectedTemplate?.title}</span>
-      </div>
-      <input
-        type="text"
-        value={habitAction}
-        onChange={e => setHabitAction(e.target.value)}
-        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-auto"
-      />
-      <button
-        onClick={next}
-        disabled={!habitAction.trim()}
-        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95 disabled:opacity-40"
-      >
-        Continue
+    // Screen 3: Habit Sizing — "Make it tiny"
+    <motion.div key="sizing" className="flex flex-col h-full px-5 pt-10 pb-6">
+      <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
+        ← Back
       </button>
+
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col">
+          <p className="text-[11px] uppercase tracking-[0.26em] font-medium text-muted-foreground mb-3">
+            Step 3 · Tiny version
+          </p>
+
+          <h1
+            className="font-display text-left font-light"
+            style={{
+              fontSize: 'clamp(24px, 5.8vw, 28px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+            }}
+          >
+            Make it tiny.
+          </h1>
+
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
+              <svg
+                viewBox="-7 -22 14 44"
+                className="w-[22px] h-[22px]"
+                fill="none"
+                stroke="#0d0d0d"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="0" cy="-14" r="4.2" />
+                <line x1="0" y1="-9.5" x2="0" y2="6" />
+                <line x1="0" y1="-1" x2="-4.5" y2="5" />
+                <line x1="0" y1="-1" x2="4.5" y2="5" />
+                <line x1="0" y1="6" x2="-3.5" y2="15" />
+                <line x1="0" y1="6" x2="3.5" y2="15" />
+              </svg>
+            </div>
+            <p className="text-[14px] text-muted-foreground italic font-body">
+              Spark: “If it feels too easy, perfect. You’ll actually do it.”
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <div className="flex items-center gap-3">
+              {selectedTemplate && (
+                (() => {
+                  const Icon = getHabitIconByTitle(selectedTemplate.title);
+                  return <Icon className="w-7 h-7 text-muted-foreground" />;
+                })()
+              )}
+              <div className="flex flex-col">
+                <span className="text-[12px] font-body uppercase tracking-[0.18em] text-muted-foreground">
+                  Habit
+                </span>
+                <span className="font-body text-[15px] font-medium text-foreground">
+                  {selectedTemplate?.title}
+                </span>
+              </div>
+            </div>
+            {selectedTemplate && (
+              <p className="mt-3 text-[12px] text-muted-foreground/80 font-body">
+                "{selectedTemplate.suggestion}" → "{selectedTemplate.smallVersion}"
+              </p>
+            )}
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
+              2-minute version (edit if you like)
+            </label>
+            <input
+              type="text"
+              value={habitAction}
+              onChange={e => setHabitAction(e.target.value)}
+              placeholder={selectedTemplate?.smallVersion || 'e.g. read one page'}
+              className="w-full bg-transparent p-0 pb-1 border-0 focus:outline-none focus:ring-0 text-[15px] font-body text-foreground placeholder:text-muted-foreground/70"
+            />
+          </div>
+
+          <div className="mt-auto pt-8">
+            <button
+              onClick={next}
+              disabled={!habitAction.trim()}
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+              }}
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
     </motion.div>,
 
-    // Screen 4: Implementation Intention
-    <motion.div key="intention" className="flex flex-col h-full px-6 py-12">
-      <button onClick={back} className="text-muted-foreground mb-8 self-start text-sm">← Back</button>
-      <h1 className="font-body font-semibold text-[2rem] leading-snug mb-3 text-foreground">
-        When and where?
-      </h1>
-      <p className="text-muted-foreground mb-8 font-body text-sm">
-        Make it specific. When will you do this?
-      </p>
-
-      <label className="text-sm font-medium text-muted-foreground mb-2 font-body">Time</label>
-      <input
-        type="time"
-        value={habitTime}
-        onChange={e => setHabitTime(e.target.value)}
-        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-6"
-      />
-
-      <label className="text-sm font-medium text-muted-foreground mb-2 font-body">Location</label>
-      <input
-        type="text"
-        value={habitLocation}
-        onChange={e => setHabitLocation(e.target.value)}
-        placeholder="e.g. at my desk"
-        className="w-full p-4 rounded-xl bg-card border border-border text-[15px] font-body focus:outline-none focus:ring-2 focus:ring-[color:var(--accent-color)]/20 mb-6"
-      />
-
-      <div className="p-5 rounded-2xl bg-[color:var(--accent-light-color)] border border-[color:var(--card-border-color)] mb-auto">
-        <p className="text-center font-display text-lg italic text-foreground">
-          I will{' '}
-          <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitAction}</span>{' '}
-          at <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitTime}</span>{' '}
-          <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitLocation}</span>
-        </p>
-      </div>
-
-      <button
-        onClick={finish}
-        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95"
-      >
-        Start Building
+    // Screen 4: Implementation Intention — "When and where?"
+    <motion.div key="intention" className="flex flex-col h-full px-5 pt-10 pb-6">
+      <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
+        ← Back
       </button>
+
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col">
+          <p className="text-[11px] uppercase tracking-[0.26em] font-medium text-muted-foreground mb-3">
+            Step 4 · When & where
+          </p>
+
+          <h1
+            className="font-display text-left font-light"
+            style={{
+              fontSize: 'clamp(24px, 5.8vw, 28px)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+            }}
+          >
+            When and where?
+          </h1>
+
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
+              <svg
+                viewBox="-7 -22 14 44"
+                className="w-[22px] h-[22px]"
+                fill="none"
+                stroke="#0d0d0d"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="0" cy="-14" r="4.2" />
+                <line x1="0" y1="-9.5" x2="0" y2="6" />
+                <line x1="0" y1="-1" x2="-4.5" y2="5" />
+                <line x1="0" y1="-1" x2="4.5" y2="5" />
+                <line x1="0" y1="6" x2="-3.5" y2="15" />
+                <line x1="0" y1="6" x2="3.5" y2="15" />
+              </svg>
+            </div>
+            <p className="text-[14px] text-muted-foreground italic font-body">
+              Spark: “If it’s not on the calendar, it’s a wish.”
+            </p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4">
+            <div className="rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+              <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
+                Time
+              </label>
+              <input
+                type="time"
+                value={habitTime}
+                onChange={e => setHabitTime(e.target.value)}
+                className="w-full bg-transparent p-0 pb-1 border-0 focus:outline-none focus:ring-0 text-[15px] font-body text-foreground"
+              />
+            </div>
+
+            <div className="rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+              <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
+                Location
+              </label>
+              <input
+                type="text"
+                value={habitLocation}
+                onChange={e => setHabitLocation(e.target.value)}
+                placeholder="e.g. at my desk, on the couch"
+                className="w-full bg-transparent p-0 pb-1 border-0 focus:outline-none focus:ring-0 text-[15px] font-body text-foreground placeholder:text-muted-foreground/70"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 p-5 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] mb-auto">
+            <p className="text-center font-display text-lg italic text-muted-foreground">
+              I will{' '}
+              <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitAction}</span>{' '}
+              at <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitTime}</span>{' '}
+              <span className="text-[color:var(--accent-color)] font-semibold not-italic">
+                {habitLocation || 'in the same place every time'}
+              </span>
+            </p>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              onClick={finish}
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+              }}
+            >
+              Start building
+            </button>
+          </div>
+        </div>
+      </div>
     </motion.div>,
   ];
 
@@ -390,7 +707,9 @@ export default function Onboarding() {
           <div
             key={i}
             className={`h-1 rounded-full transition-all duration-300 ${
-              i <= step ? 'bg-primary w-8' : 'bg-muted w-4'
+              i <= step
+                ? 'bg-[color:var(--accent-color)] w-8'
+                : 'bg-[color:var(--accent-light-color)] w-4'
             }`}
           />
         ))}
