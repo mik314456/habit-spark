@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { format, subDays, differenceInMinutes, differenceInHours, isSameDay, startOfWeek, addDays } from 'date-fns';
+import { format, subDays, differenceInMinutes, differenceInHours, isSameDay, startOfWeek, addDays, getISOWeek } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -62,15 +62,6 @@ const HABIT_CHECK: Record<HabitColor, string> = {
 
 const SPARK_QUIP_CACHE_KEY = 'spark-today-quip-v1';
 
-/** Motivational lines used for the bottom strip (fallback when no habit-matched lines). */
-const MOTIVATIONAL_LINES = [
-  'Strong people show up for their habits.',
-  'Healthy habits build a better you.',
-  'Consistency beats intensity.',
-  'Small steps compound.',
-  'You are what you do daily.',
-];
-
 const habitIconMap: Record<string, ComponentType<{ className?: string }>> = {
   dumbbell: Dumbbell,
   brain: Brain,
@@ -103,7 +94,7 @@ function HeaderCelebrationFigure() {
   const stroke = 1.15;
   const headY = -9;
   return (
-    <g className="header-celebration-wrap" fill="none" stroke="#fff" strokeWidth={stroke} opacity={0.95}>
+    <g className="header-celebration-wrap stroke-header" fill="none" strokeWidth={stroke} opacity={0.95} style={{ stroke: 'hsl(var(--header-stroke))' }}>
       <g className="header-celebration-jump">
         <circle cx="0" cy={headY} r="3" strokeWidth={stroke} />
         <line x1="0" y1="-6" x2="0" y2="5.5" strokeWidth={stroke} />
@@ -123,7 +114,7 @@ function HeaderCinematicFigure() {
   const hipY = 5.5;
   const shoulderY = 0.5;
   return (
-    <g className="header-cinematic-move" fill="none" stroke="#fff" strokeWidth={stroke} opacity={0.9}>
+    <g className="header-cinematic-move stroke-header" fill="none" strokeWidth={stroke} opacity={0.9} style={{ stroke: 'hsl(var(--header-stroke))' }}>
       {/* Scene 1 & 5: Walking — torso lean forward, stick, backpack, arm + legs from same hip. */}
       <g className="header-pose-walk">
         <g className="header-hiker-bob">
@@ -174,7 +165,7 @@ function HeaderCinematicFigure() {
         <line x1="0" y1="-2" x2="0" y2="2.5" strokeWidth={stroke} />
         <line x1="0" y1="2.5" x2="-3.5" y2="7.5" strokeWidth={stroke} />
         <line x1="0" y1="2.5" x2="3.5" y2="7.5" strokeWidth={stroke} />
-        <text x="0" y="-9" textAnchor="middle" fill="#fff" fontSize="3.5" opacity={0.9} className="header-rest-z">z</text>
+        <text x="0" y="-9" textAnchor="middle" fontSize="3.5" opacity={0.9} className="header-rest-z fill-header-stroke" style={{ fill: 'hsl(var(--header-stroke))' }}>z</text>
       </g>
     </g>
   );
@@ -261,16 +252,6 @@ Output nothing but the single line.`;
   return words.join(' ');
 }
 
-/** Identity-style motivational lines; some keyed by habit keywords. */
-const MOTIVATIONAL_BY_HABIT: { match: RegExp | string; line: string }[] = [
-  { match: /meditate|calm|mind/i, line: 'Calm people meditate daily.' },
-  { match: /read|book/i, line: 'Readers never stop growing.' },
-  { match: /exercise|workout|gym|run/i, line: 'Strong people show up for their habits.' },
-  { match: /water|drink|eat|health/i, line: 'Healthy habits build a better you.' },
-  { match: /journal|write/i, line: 'Writers show up one sentence at a time.' },
-];
-const MOTIVATIONAL_FALLBACK = MOTIVATIONAL_LINES;
-
 export default function Today() {
   const navigate = useNavigate();
   const app = useApp();
@@ -300,24 +281,6 @@ export default function Today() {
     () => (Array.isArray(habits) ? habits.filter((h: { archived?: boolean }) => !h.archived) : []),
     [habits],
   );
-
-  const motivationalLines = useMemo(() => {
-    const fromHabits = new Set<string>();
-    activeHabits.forEach(h => {
-      const title = h.title || '';
-      for (const { match, line } of MOTIVATIONAL_BY_HABIT) {
-        if (typeof match === 'string' ? title.toLowerCase().includes(match.toLowerCase()) : match.test(title)) {
-          fromHabits.add(line);
-          break;
-        }
-      }
-    });
-    const combined = [...fromHabits, ...MOTIVATIONAL_FALLBACK];
-    return combined.length > 0 ? combined : MOTIVATIONAL_FALLBACK;
-  }, [activeHabits]);
-
-  const [motivationalIndex] = useState(() => Math.floor(Math.random() * 10));
-  const motivationalLine = motivationalLines[motivationalIndex % Math.max(1, motivationalLines.length)];
 
   const now = new Date();
   const todayLocal = format(now, 'yyyy-MM-dd');
@@ -534,12 +497,12 @@ export default function Today() {
 
   if (!app) {
     return (
-      <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }} />
+      <div className="min-h-screen pb-24 bg-page" />
     );
   }
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: '#080808' }}>
+    <div className="min-h-screen pb-24 bg-page">
       <div className="max-w-md mx-auto px-5 pt-12">
         <AnimatePresence>
           {showDontMissBanner && (
@@ -571,7 +534,7 @@ export default function Today() {
         </AnimatePresence>
 
         {/* Header: full-bleed mountain background, text on top with left gradient for readability */}
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-8 relative overflow-hidden rounded-2xl min-h-[150px]">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 relative overflow-hidden rounded-2xl min-h-[150px]">
           {/* Full-bleed mountain SVG background */}
           <svg
             className="absolute inset-0 w-full h-full object-cover"
@@ -580,7 +543,7 @@ export default function Today() {
             aria-hidden
           >
             {/* Stars — 8–10 dots, upper portion */}
-            <g fill="#fff">
+            <g className="fill-header-stroke" style={{ fill: 'hsl(var(--header-stroke))' }}>
               <circle cx="180" cy="22" r="1" opacity={0.35} />
               <circle cx="220" cy="18" r="1.2" opacity={0.25} />
               <circle cx="255" cy="28" r="0.8" opacity={0.3} />
@@ -592,27 +555,31 @@ export default function Today() {
               <circle cx="230" cy="12" r="0.8" opacity={0.35} />
             </g>
             {/* Moon — upper right */}
-            <circle cx="265" cy="28" r="8" fill="#fff" opacity={0.15} />
-            {/* Back mountain — #111, tallest, centered-right */}
+            <circle cx="265" cy="28" r="8" className="fill-header-stroke" style={{ fill: 'hsl(var(--header-stroke))' }} opacity={0.15} />
+            {/* Back mountain */}
             <polygon
-              fill="#111111"
+              className="fill-header-mountain-back"
+              style={{ fill: 'hsl(var(--header-mountain-back))' }}
               points="60,140 60,75 100,55 140,70 180,45 220,65 260,38 300,50 300,140"
             />
-            {/* Mid mountain — #1a1a1a, slightly shorter, offset right */}
+            {/* Mid mountain */}
             <polygon
-              fill="#1a1a1a"
+              className="fill-header-mountain-mid"
+              style={{ fill: 'hsl(var(--header-mountain-mid))' }}
               points="100,140 100,88 140,72 180,85 220,62 260,78 300,68 300,140"
             />
-            {/* Front mountain — #222222, jagged foreground, right */}
+            {/* Front mountain */}
             <polygon
-              fill="#222222"
+              className="fill-header-mountain-front"
+              style={{ fill: 'hsl(var(--header-mountain-front))' }}
               points="140,140 140,105 180,95 220,108 260,92 300,98 300,140"
             />
             {/* Dotted path up the slope */}
             <path
               d="M 235 128 Q 225 108 218 88 T 208 58 T 202 42"
               fill="none"
-              stroke="#fff"
+              className="stroke-header"
+              style={{ stroke: 'hsl(var(--header-stroke))' }}
               strokeWidth="0.6"
               strokeDasharray="2 2"
               opacity={0.2}
@@ -623,31 +590,19 @@ export default function Today() {
               <HeaderCinematicFigure />
             )}
           </svg>
-          {/* Left-side dark gradient so text is always readable */}
-          <div
-            className="absolute inset-0 pointer-events-none rounded-2xl"
-            style={{
-              background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)',
-            }}
-            aria-hidden
-          />
+          {/* Gradient overlay so text is readable on mountains */}
+          <div className="absolute inset-0 pointer-events-none rounded-2xl header-overlay" aria-hidden />
           {/* Text on top */}
           <div className="relative z-10 pt-0.5 pb-1 px-4">
-            <p
-              className="text-[11px] text-muted-foreground/90 tracking-[0.12em] uppercase font-body"
-              style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
-            >
+            <p className="text-[11px] text-muted-foreground/90 tracking-[0.12em] uppercase font-body header-text-shadow">
               {format(now, 'EEEE, MMMM d')}
             </p>
-            <h1
-              className="mt-2 font-body font-semibold text-[2.6rem] leading-tight text-foreground"
-              style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
-            >
+            <h1 className="mt-2 font-body font-semibold text-[2.6rem] leading-tight text-foreground header-text-shadow">
               {greeting}
             </h1>
             {activeHabits.length > 0 && (
               completedCount === activeHabits.length ? (
-                <div className="flex items-center gap-2 mt-3" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+                <div className="flex items-center gap-2 mt-3 header-text-shadow">
                   <CheckCircle2 className="w-4 h-4 text-[color:var(--accent-color)]" />
                   <p className="text-sm font-body text-[color:var(--accent-color)]">
                     All done. You showed up today.
@@ -655,8 +610,7 @@ export default function Today() {
                 </div>
               ) : (
                 <p
-                  className="text-muted-foreground text-sm mt-3 font-body min-h-[1.25rem] overflow-visible"
-                  style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}
+                  className="text-muted-foreground text-sm mt-3 font-body min-h-[1.25rem] overflow-visible header-text-shadow"
                 >
                   <span className="tabular-nums">{completedCount}</span>
                   {' of '}
@@ -668,67 +622,56 @@ export default function Today() {
           </div>
         </motion.div>
 
-        {/* Next Up — up to 3 upcoming incomplete habits, stacked rows */}
+        {/* From Spark — quip in a stack card */}
         {activeHabits.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-5 rounded-2xl p-4 border border-[#222222]"
-            style={{ backgroundColor: '#111111' }}
+            className="mb-5 rounded-2xl p-4 border border-border-strong bg-card-surface"
           >
-            <p className="text-[11px] text-white/60 uppercase tracking-wide font-body mb-3">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-body mb-3">
+              From Spark
+            </p>
+            <p className="text-[13px] text-foreground font-body leading-snug">
+              {sparkQuipLoading ? '…' : `"${sparkQuip ?? getTimeContext(hour)}"`}
+            </p>
+          </motion.div>
+        )}
+
+        {/* Next up — compact, title only */}
+        {activeHabits.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-5 rounded-2xl p-4 border border-border-strong bg-card-surface"
+          >
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-body mb-3">
               Next up
             </p>
             {nextUpHabits.length > 0 ? (
-              <div className="divide-y divide-[#222222]">
+              <div className="divide-y divide-border">
                 {nextUpHabits.map(({ habit }) => (
                   <div
                     key={habit.id}
-                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                    className="flex items-center gap-2 py-2 first:pt-0 last:pb-0"
                   >
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#1a1a1a]"
+                      className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-card"
                       style={{ color: 'var(--accent-color)' }}
                     >
                       <TodayHabitIcon habit={habit} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body font-medium text-[15px] truncate text-white">
-                        {habit.title}
-                      </p>
-                      <p className="text-[13px] text-white/70 font-body truncate">
-                        {habit.timeOfDay} · {habit.location || '—'}
-                      </p>
-                    </div>
+                    <p className="font-body font-medium text-[13px] leading-snug truncate text-foreground flex-1 min-w-0">
+                      {habit.title}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="font-body text-white/80 text-sm py-1">
+              <p className="font-body text-[13px] text-muted-foreground leading-snug py-0.5">
                 No more habits left for today.
               </p>
             )}
-          </motion.div>
-        )}
-
-        {/* Weather + Spark quip row — live quip fetched once per day, wraps to 2 lines if needed */}
-        {activeHabits.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-3 mb-5 py-2.5 px-3 rounded-xl bg-muted/50 border border-border/50"
-          >
-            <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 text-muted-foreground">
-              <TimeOfDayIcon hour={hour} className="w-5 h-5" />
-            </div>
-            {bestStreak > 0 && (
-              <span className="text-xs font-medium text-foreground font-body flex-shrink-0">
-                Day {bestStreak}
-              </span>
-            )}
-            <span className="flex-1 min-w-0 text-xs text-muted-foreground font-body leading-snug py-0.5">
-              {sparkQuipLoading ? '…' : sparkQuip ?? getTimeContext(hour)}
-            </span>
           </motion.div>
         )}
 
@@ -742,8 +685,8 @@ export default function Today() {
             <p className="mb-4 flex justify-center">
               <Sprout className="w-10 h-10 text-[var(--accent-color)]" />
             </p>
-            <h2 className="text-xl mb-2 font-semibold text-white">No habits yet</h2>
-            <p className="text-white/60 text-sm mb-6">Add your first habit and start building.</p>
+            <h2 className="text-xl mb-2 font-semibold text-foreground">No habits yet</h2>
+            <p className="text-muted-foreground text-sm mb-6">Add your first habit and start building.</p>
             <button
               onClick={() => setShowAddHabit(true)}
               className="px-6 py-3 rounded-2xl gradient-warm text-primary-foreground font-semibold shadow-elevated"
@@ -789,7 +732,7 @@ export default function Today() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center gap-2 mt-6 mb-4"
+            className="flex items-center justify-center gap-2 mt-5 mb-5"
           >
             <button
               type="button"
@@ -815,34 +758,40 @@ export default function Today() {
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-2xl p-4 border border-[#222222]"
-            style={{ backgroundColor: '#111111' }}
+            className="mb-5 rounded-2xl p-4 border border-border-strong bg-card-surface"
           >
-            <p className="text-[11px] text-white/60 uppercase tracking-wide font-body mb-4">
-              This week
-            </p>
-            {/* One grid: 7 cols, row 1 = letters, row 2+ = habit cells — gap-x-5 (20px), gap-y-3 (12px) */}
-            <div className="grid grid-cols-7 gap-x-5 gap-y-3">
-              {/* Row 1: day letters — each cell same width, centered */}
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, dayIndex) => {
+            <div className="flex items-baseline justify-between gap-3 mb-4">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-body">
+                This week
+              </p>
+              <p className="text-[11px] text-muted-foreground font-body shrink-0 uppercase">
+                Week {getISOWeek(now)} · {format(now, 'MMMM')}
+              </p>
+            </div>
+            {/* Grid: same font size and spacing as Progress "This week" — gap-2, text-[10px], w-9 h-9 cells */}
+            <div className="grid grid-cols-7 gap-2 place-items-center">
+              {/* Row 1: day names (Mon, Tue, …) — text-[10px] font-medium like Progress */}
+              {Array.from({ length: 7 }, (_, dayIndex) => {
+                const d = addDays(startOfWeek(now, { weekStartsOn: 1 }), dayIndex);
+                const label = format(d, 'EEE');
                 const dayInfo = weekCompletionByHabit[activeHabits[0]?.id]?.[dayIndex];
                 const isToday = dayInfo?.isToday ?? false;
                 return (
                   <div
-                    key={`letter-${dayIndex}`}
-                    className="flex flex-col items-center justify-center min-h-[32px]"
+                    key={`day-${dayIndex}`}
+                    className="flex flex-col items-center gap-1.5"
                   >
                     <span
-                      className={`text-[12px] font-semibold font-body tabular-nums ${
-                        isToday ? 'text-white' : 'text-white/50'
+                      className={`text-[10px] font-medium font-body ${
+                        isToday ? 'text-[color:var(--accent-color)]' : 'text-muted-foreground'
                       }`}
                     >
-                      {letter}
+                      {label}
                     </span>
                   </div>
                 );
               })}
-              {/* Rows 2+ : one row per habit, 7 cells each — same cell size for perfect alignment */}
+              {/* Rows 2+ : one row per habit, 7 cells each — w-9 h-9 like Progress */}
               {activeHabits.map(habit => {
                 const week = weekCompletionByHabit[habit.id];
                 if (!week || week.length !== 7) return null;
@@ -852,21 +801,23 @@ export default function Today() {
                   return (
                     <div
                       key={`${habit.id}-${dayIndex}`}
-                      className="flex items-center justify-center min-h-[28px] w-full"
+                      className="flex flex-col items-center justify-center gap-1.5 w-full"
                     >
                       {completed ? (
-                        <Check
-                          className={`w-5 h-5 shrink-0 ${HABIT_CHECK[habit.color]}`}
-                          strokeWidth={2.25}
-                        />
+                        <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                          <Check
+                            className={`w-5 h-5 ${HABIT_CHECK[habit.color]}`}
+                            strokeWidth={2.25}
+                          />
+                        </div>
                       ) : isFuture ? (
-                        <span className="w-7 h-7 flex items-center justify-center shrink-0">
-                          <Circle className="w-5 h-5 text-white/[0.1]" strokeWidth={1.5} />
-                        </span>
+                        <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                          <Circle className="w-5 h-5 text-muted-foreground/30" strokeWidth={1.5} />
+                        </div>
                       ) : (
-                        <span className="w-7 h-7 flex items-center justify-center shrink-0">
-                          <Circle className="w-5 h-5 text-white/20" strokeWidth={1.5} />
-                        </span>
+                        <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                          <Circle className="w-5 h-5 text-muted-foreground/50" strokeWidth={1.5} />
+                        </div>
                       )}
                     </div>
                   );
@@ -874,14 +825,14 @@ export default function Today() {
               })}
             </div>
             {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-[#222222]">
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-border">
               {activeHabits.map(habit => (
                 <div key={habit.id} className="flex items-center gap-2">
                   <Check
                     className={`w-4 h-4 shrink-0 ${HABIT_CHECK[habit.color]}`}
                     strokeWidth={2.25}
                   />
-                  <span className="text-[11px] text-white/50 font-body">{habit.title}</span>
+                  <span className="text-[11px] text-muted-foreground font-body">{habit.title}</span>
                 </div>
               ))}
             </div>
@@ -890,20 +841,11 @@ export default function Today() {
 
       </div>
 
-      {/* Bottom motivational strip (above tab bar) */}
-      {activeHabits.length > 0 && (
-        <div className="fixed bottom-14 left-0 right-0 flex justify-center z-30 pointer-events-none px-4">
-          <p className="text-[11px] text-muted-foreground/70 font-body max-w-xs text-center">
-            {motivationalLine}
-          </p>
-        </div>
-      )}
-
       {/* FAB */}
       {activeHabits.length > 0 && (
         <motion.button
           onClick={() => setShowAddHabit(true)}
-          className="fixed bottom-20 right-5 w-[52px] h-[52px] rounded-full bg-[color:var(--accent-color)] text-white shadow-card flex items-center justify-center z-40 transition-transform duration-150"
+          className="fixed bottom-20 right-5 w-[52px] h-[52px] rounded-full bg-[color:var(--accent-color)] text-primary-foreground shadow-card flex items-center justify-center z-40 transition-transform duration-150"
           whileTap={{ scale: 0.95 }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}

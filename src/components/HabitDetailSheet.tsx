@@ -180,7 +180,7 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   <button
                     type="button"
                     onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-white shadow-md hover:opacity-90 active:scale-95 transition-all"
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-primary-foreground shadow-md hover:opacity-90 active:scale-95 transition-all"
                     aria-label="Previous month"
                   >
                     <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
@@ -192,7 +192,7 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                     type="button"
                     onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
                     disabled={isSameMonth(currentMonth, today)}
-                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-white shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--accent-color)] text-primary-foreground shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
                     aria-label="Next month"
                   >
                     <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
@@ -389,8 +389,8 @@ export default function HabitDetailSheet({ open, habit, onClose }: HabitDetailSh
                   </button>
                   <button
                     onClick={handleSave}
-                    className="flex-1 ml-3 py-2.5 rounded-full text-sm font-semibold shadow-card"
-                    style={{ backgroundColor: 'var(--accent-color)', color: '#ffffff' }}
+                    className="flex-1 ml-3 py-2.5 rounded-full text-sm font-semibold shadow-card text-primary-foreground"
+                    style={{ backgroundColor: 'var(--accent-color)' }}
                   >
                     Save changes
                   </button>

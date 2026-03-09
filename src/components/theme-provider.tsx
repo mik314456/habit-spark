@@ -2,7 +2,12 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="dark"
+      storageKey="habit-spark-theme"
+      enableSystem={false}
+    >
       {children}
     </NextThemesProvider>
   );

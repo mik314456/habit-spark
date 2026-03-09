@@ -161,10 +161,10 @@ const WORD_DELAY_MS = 55;
 
 /** Exact same class for every Spark bubble — full width, left-aligned row. */
 const SPARK_BUBBLE_CLASS =
-  'w-full rounded-2xl px-4 py-2.5 bg-[#111111] border border-[#1e1e1e] text-foreground/95';
+  'w-full rounded-2xl px-4 py-2.5 bg-card-surface border border-border text-foreground/95';
 /** Exact same class for every user bubble — full width, right-aligned row. */
 const USER_BUBBLE_CLASS =
-  'w-full rounded-2xl px-4 py-2.5 bg-[#1a1a1a] border border-[#2a2a2a] text-foreground';
+  'w-full rounded-2xl px-4 py-2.5 bg-card border border-border text-foreground';
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -383,7 +383,7 @@ export default function Coach() {
   const hasTyped = inputValue.trim().length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col pb-24" style={{ backgroundColor: '#080808' }}>
+    <div className="min-h-screen flex flex-col pb-24 bg-page">
       <div className="max-w-md mx-auto w-full flex flex-col flex-1 min-h-0 px-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -391,9 +391,9 @@ export default function Coach() {
           className="flex items-center gap-2 pt-6 pb-2 flex-shrink-0"
         >
           <SparkHeaderFigure />
-          <h1 className="text-2xl font-semibold text-white">Spark</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Spark</h1>
         </motion.div>
-        <p className="text-white/60 text-sm mb-3 flex-shrink-0">
+        <p className="text-muted-foreground text-sm mb-3 flex-shrink-0">
           {sparkGreeting}
         </p>
 
@@ -467,15 +467,11 @@ export default function Coach() {
             </motion.div>
           )}
 
-          <div
-            className="rounded-[20px] border p-3 space-y-2"
-            style={{ backgroundColor: '#111111', borderColor: '#222222' }}
-          >
+          <div className="rounded-[20px] border border-border-strong bg-card-surface p-3 space-y-2">
             <div className="relative">
               <textarea
                 rows={2}
-                className="w-full rounded-xl border px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] text-white placeholder:text-white/40"
-                style={{ backgroundColor: '#0d0d0d', borderColor: '#222222' }}
+                className="w-full rounded-xl border border-border bg-card-surface-deep px-3 py-2 pr-9 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] text-foreground placeholder:text-muted-foreground"
                 placeholder="Ask Spark anything..."
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}

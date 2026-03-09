@@ -163,7 +163,7 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
                           className={`relative flex flex-col items-center justify-center rounded-[16px] border w-[150px] h-[130px] mx-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                             isSelected
                               ? ''
-                              : 'bg-card border-border text-foreground dark:bg-[#1a1a1a] dark:border-white/10 dark:text-white'
+                              : 'bg-card border-border text-foreground'
                           }`}
                           animate={{
                             scale: isSelected ? 1.03 : 1,
@@ -180,13 +180,13 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
                         >
                           <span
                             className="flex items-center justify-center mb-2"
-                            style={isSelected ? { color: '#fff' } : habitIconColor(t.color)}
+                            style={isSelected ? { color: 'hsl(var(--primary-foreground))' } : habitIconColor(t.color)}
                           >
                             <Icon className="w-8 h-8" strokeWidth={1.8} />
                           </span>
                           <span
                             className={`text-center text-[13px] px-1 leading-tight ${
-                              isSelected ? 'text-white font-bold' : 'font-medium'
+                              isSelected ? 'text-primary-foreground font-bold' : 'font-medium'
                             }`}
                           >
                             {t.title}
@@ -202,7 +202,7 @@ export default function AddHabitModal({ onClose }: AddHabitModalProps) {
             <button
               type="button"
               onClick={startCustom}
-              className="mt-6 w-full flex flex-col items-center justify-center gap-2 py-5 rounded-[16px] border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors font-body text-sm font-medium bg-card dark:bg-[#1a1a1a] dark:border-white/20 dark:text-white/80 dark:hover:border-white/30 dark:hover:text-white/90"
+              className="mt-6 w-full flex flex-col items-center justify-center gap-2 py-5 rounded-[16px] border-2 border-dashed border-border text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors font-body text-sm font-medium bg-card"
             >
               <Plus className="w-6 h-6" />
               <span>Create your own habit</span>

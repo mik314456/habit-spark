@@ -21,16 +21,16 @@ import { getHabitIconByTitle } from '@/lib/habitIcons';
 
 const colorClasses: Record<
   HabitColor,
-  { bg: string; border: string; fill: string; tint: string; tintSubtle: string; tintCompleted: string }
+  { bg: string; border: string; fill: string; tint: string; tintSubtle: string; tintCompleted: string; tintFill: string }
 > = {
-  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10', tintSubtle: 'bg-habit-amber/5', tintCompleted: 'bg-habit-amber/20' },
-  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10', tintSubtle: 'bg-habit-sage/5', tintCompleted: 'bg-habit-sage/20' },
-  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10', tintSubtle: 'bg-habit-coral/5', tintCompleted: 'bg-habit-coral/20' },
-  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10', tintSubtle: 'bg-habit-sky/5', tintCompleted: 'bg-habit-sky/20' },
-  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10', tintSubtle: 'bg-habit-violet/5', tintCompleted: 'bg-habit-violet/20' },
-  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10', tintSubtle: 'bg-habit-rose/5', tintCompleted: 'bg-habit-rose/20' },
-  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10', tintSubtle: 'bg-habit-teal/5', tintCompleted: 'bg-habit-teal/20' },
-  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10', tintSubtle: 'bg-habit-slate/5', tintCompleted: 'bg-habit-slate/20' },
+  amber: { bg: 'bg-habit-amber', border: 'border-l-habit-amber', fill: 'stroke-habit-amber', tint: 'bg-habit-amber/10', tintSubtle: 'bg-habit-amber/5', tintCompleted: 'bg-habit-amber/20', tintFill: 'bg-habit-amber/40' },
+  sage: { bg: 'bg-habit-sage', border: 'border-l-habit-sage', fill: 'stroke-habit-sage', tint: 'bg-habit-sage/10', tintSubtle: 'bg-habit-sage/5', tintCompleted: 'bg-habit-sage/20', tintFill: 'bg-habit-sage/40' },
+  coral: { bg: 'bg-habit-coral', border: 'border-l-habit-coral', fill: 'stroke-habit-coral', tint: 'bg-habit-coral/10', tintSubtle: 'bg-habit-coral/5', tintCompleted: 'bg-habit-coral/20', tintFill: 'bg-habit-coral/40' },
+  sky: { bg: 'bg-habit-sky', border: 'border-l-habit-sky', fill: 'stroke-habit-sky', tint: 'bg-habit-sky/10', tintSubtle: 'bg-habit-sky/5', tintCompleted: 'bg-habit-sky/20', tintFill: 'bg-habit-sky/40' },
+  violet: { bg: 'bg-habit-violet', border: 'border-l-habit-violet', fill: 'stroke-habit-violet', tint: 'bg-habit-violet/10', tintSubtle: 'bg-habit-violet/5', tintCompleted: 'bg-habit-violet/20', tintFill: 'bg-habit-violet/40' },
+  rose: { bg: 'bg-habit-rose', border: 'border-l-habit-rose', fill: 'stroke-habit-rose', tint: 'bg-habit-rose/10', tintSubtle: 'bg-habit-rose/5', tintCompleted: 'bg-habit-rose/20', tintFill: 'bg-habit-rose/40' },
+  teal: { bg: 'bg-habit-teal', border: 'border-l-habit-teal', fill: 'stroke-habit-teal', tint: 'bg-habit-teal/10', tintSubtle: 'bg-habit-teal/5', tintCompleted: 'bg-habit-teal/20', tintFill: 'bg-habit-teal/40' },
+  slate: { bg: 'bg-habit-slate', border: 'border-l-habit-slate', fill: 'stroke-habit-slate', tint: 'bg-habit-slate/10', tintSubtle: 'bg-habit-slate/5', tintCompleted: 'bg-habit-slate/20', tintFill: 'bg-habit-slate/40' },
 };
 
 interface HabitCardProps {
@@ -159,10 +159,10 @@ export default function HabitCard({
       >
         {/* Hold-to-complete progress fill (habit color, left-to-right) */}
         <motion.div
-          className={`absolute inset-0 rounded-[14px] origin-left pointer-events-none ${colors.tint}`}
+          className={`absolute inset-0 rounded-[14px] origin-left pointer-events-none ${colors.tintFill}`}
           style={{
             transform: `scaleX(${fillAmount || 0})`,
-            opacity: isHolding ? 0.7 : completed ? 0.4 : 0,
+            opacity: isHolding ? 1 : completed ? 0.85 : 0,
           }}
           transition={{
             transform: { duration: 0.15, ease: 'easeOut' },

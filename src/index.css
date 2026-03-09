@@ -5,8 +5,9 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Dark theme only — background #0a0a0a */
+  :root,
+  .dark {
+    /* Dark theme */
     --background: 0 0% 4%; /* #0a0a0a */
     --foreground: 0 0% 96%;
 
@@ -16,6 +17,16 @@
     --card-border-color: hsl(0 0% 18%);
     --success-color: #5c7a5f;
     --muted-color: #b3b3b3;
+
+    --page-bg: 0 0% 3%; /* #080808 */
+    --card-surface: 0 0% 7%; /* #111111 */
+    --card-surface-deep: 0 0% 5%; /* #0d0d0d */
+    --border-strong: 0 0% 13%; /* #222222 */
+    --header-stroke: 0 0% 100%;
+    --header-mountain-back: 0 0% 7%;
+    --header-mountain-mid: 0 0% 10%;
+    --header-mountain-front: 0 0% 13%;
+    --header-text-shadow: 0 1px 8px rgba(0,0,0,0.8);
 
     --card: 0 0% 10%;
     --card-foreground: 0 0% 96%;
@@ -70,6 +81,68 @@
     --sidebar-border: 0 0% 18%;
     --sidebar-ring: 25 92% 56%;
   }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
+
+    --cream-color: #f5f5f5;
+    --ink-color: #1a1a1a;
+    --card-color: #ffffff;
+    --card-border-color: hsl(0 0% 90%);
+    --success-color: #4a6b4d;
+    --muted-color: #737373;
+
+    --page-bg: 0 0% 97%;
+    --card-surface: 0 0% 100%;
+    --card-surface-deep: 0 0% 98%;
+    --border-strong: 0 0% 88%;
+    --header-stroke: 0 0% 15%;
+    --header-mountain-back: 0 0% 85%;
+    --header-mountain-mid: 0 0% 80%;
+    --header-mountain-front: 0 0% 75%;
+    --header-text-shadow: 0 1px 6px rgba(255,255,255,0.6);
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+
+    --primary: 25 92% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent-color: hsl(25 92% 50%);
+    --accent-light-color: hsl(25 92% 56% / 0.2);
+
+    --accent: 15 85% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 25 92% 50%;
+
+    --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.08);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.12);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 25 92% 50%;
+  }
 }
 
 @layer base {
@@ -79,13 +152,13 @@
 
   #root {
     min-height: 100vh;
-    background-color: #0a0a0a;
+    background-color: hsl(var(--background));
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
-    background-color: #0a0a0a;
+    background-color: hsl(var(--background));
     position: relative;
   }
 
@@ -382,4 +455,23 @@
     0%, 100% { box-shadow: 0 0 14px hsl(45 70% 55% / 0.5); }
     50% { box-shadow: 0 0 22px hsl(45 70% 55% / 0.75); }
   }
+
+  /* Theme-aware page and card surfaces */
+  .bg-page { background-color: hsl(var(--page-bg)); }
+  .bg-card-surface { background-color: hsl(var(--card-surface)); }
+  .bg-card-surface-deep { background-color: hsl(var(--card-surface-deep)); }
+  .border-border-strong { border-color: hsl(var(--border-strong)); }
+  .text-header-stroke { color: hsl(var(--header-stroke)); }
+  .stroke-header { stroke: hsl(var(--header-stroke)); }
+  .fill-header-stroke { fill: hsl(var(--header-stroke)); }
+  .fill-header-mountain-back { fill: hsl(var(--header-mountain-back)); }
+  .fill-header-mountain-mid { fill: hsl(var(--header-mountain-mid)); }
+  .fill-header-mountain-front { fill: hsl(var(--header-mountain-front)); }
+  .header-overlay {
+    background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
+  }
+  .light .header-overlay {
+    background: linear-gradient(to right, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  }
+  .header-text-shadow { text-shadow: var(--header-text-shadow); }
 }
