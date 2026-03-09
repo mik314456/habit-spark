@@ -474,4 +474,25 @@
     background: linear-gradient(to right, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
   }
   .header-text-shadow { text-shadow: var(--header-text-shadow); }
+
+  /* Welcome / onboarding hero — premium atmosphere */
+  .welcome-bg {
+    background: radial-gradient(ellipse 120% 80% at 50% 20%, hsl(25 40% 12% / 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 100% at 50% 100%, hsl(0 0% 5%) 0%, hsl(0 0% 2%) 100%);
+  }
+  .light .welcome-bg {
+    background: radial-gradient(ellipse 120% 80% at 50% 20%, hsl(25 60% 95% / 0.5) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 100% at 50% 100%, hsl(0 0% 98%) 0%, hsl(0 0% 96%) 100%);
+  }
+  .welcome-spark-glow {
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
+    filter: blur(24px);
+  }
+  .welcome-spark-float {
+    animation: welcome-spark-float 4s ease-in-out infinite;
+  }
+  @keyframes welcome-spark-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
 }

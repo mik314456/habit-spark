@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
-import welcomeIllustration from '@/assets/welcome-illustration.png';
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -59,28 +58,106 @@ export default function Onboarding() {
   const identityChips = ['A healthy person', 'A focused person', 'A creative person', 'A calm person', 'A strong person'];
 
   const screens = [
-    // Screen 0: Welcome
-    <motion.div key="welcome" className="flex flex-col items-center justify-between h-full px-6 py-16">
-      <div />
-      <div className="flex flex-col items-center gap-6">
-        <img src={welcomeIllustration} alt="Growing plants" className="w-64 h-64 object-contain" />
-        <h1 className="font-body font-semibold text-[2.4rem] leading-tight text-center text-foreground">
-          Your habits.
-          <br />
-          Your identity.
-          <br />
-          Your life.
-        </h1>
-        <p className="text-muted-foreground text-center max-w-xs font-body text-sm">
-          Build the person you want to be, one habit at a time.
-        </p>
+    // Screen 0: Light, premium welcome — warm cream, editorial, Spark as hero
+    <motion.div
+      key="welcome"
+      className="fixed inset-0 flex flex-col overflow-hidden bg-white"
+      style={{ backgroundColor: '#ffffff' }}
+    >
+      {/* Barely perceptible grain — warm not sterile */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.025]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        }}
+        aria-hidden
+      />
+
+      <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-[80px]">
+        {/* 1. HABIT SPARK */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="text-[10px] uppercase font-normal"
+          style={{ letterSpacing: '0.25em', color: '#cccccc', fontWeight: 400 }}
+        >
+          HABIT SPARK
+        </motion.p>
+
+        {/* 2. Spark — 120px, hero */}
+        <motion.div
+          className="relative flex items-center justify-center mt-10"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: [0, 0, 0.2, 1] }}
+        >
+          <motion.div
+            className="relative"
+            animate={{ y: [0, -6] }}
+            transition={{ duration: 3, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+          >
+            <svg
+              viewBox="-7 -22 14 44"
+              className="w-[120px] h-[120px]"
+              fill="none"
+              stroke="#000000"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <circle cx="0" cy="-14" r="5" />
+              <line x1="0" y1="-9" x2="0" y2="8" />
+              <line x1="0" y1="0" x2="-5" y2="7" />
+              <line x1="0" y1="0" x2="5" y2="7" />
+              <line x1="0" y1="8" x2="-4" y2="20" />
+              <line x1="0" y1="8" x2="4" y2="20" />
+            </svg>
+          </motion.div>
+        </motion.div>
+
+        {/* 3. Show up. */}
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.8, ease: [0, 0, 0.2, 1] }}
+          className="text-center font-light mt-6"
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 64,
+            fontWeight: 300,
+            color: '#000000',
+            letterSpacing: '-0.03em',
+          }}
+        >
+          Show up.
+        </motion.h1>
       </div>
-      <button
-        onClick={next}
-        className="w-full py-4 rounded-full bg-[color:var(--accent-color)] font-body font-medium text-[15px] tracking-wide text-white shadow-card transition-transform active:scale-95"
+
+      {/* Button */}
+      <motion.div
+        className="fixed left-0 right-0 flex justify-center px-6"
+        style={{ bottom: 52 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
       >
-        Get Started
-      </button>
+        <motion.button
+          onClick={next}
+          className="w-full max-w-[340px] h-[52px] rounded-[50px] text-[15px] text-white"
+          style={{
+            backgroundColor: '#000000',
+            color: '#ffffff',
+            letterSpacing: '0.02em',
+            fontWeight: 500,
+          }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ duration: 0.1 }}
+        >
+          Get started
+        </motion.button>
+      </motion.div>
     </motion.div>,
 
     // Screen 1: Identity
