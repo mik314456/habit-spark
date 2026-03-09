@@ -61,99 +61,132 @@ export default function Onboarding() {
     // Screen 0: Light, premium welcome — warm cream, editorial, Spark as hero
     <motion.div
       key="welcome"
-      className="fixed inset-0 flex flex-col overflow-hidden bg-white"
-      style={{ backgroundColor: '#ffffff' }}
+      className="fixed inset-0 flex flex-col overflow-hidden"
+      style={{
+        background: 'radial-gradient(ellipse 100% 80% at 50% -10%, rgba(255,252,248,0.6) 0%, transparent 50%), #fefdfb',
+      }}
     >
-      {/* Barely perceptible grain — warm not sterile */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.025]"
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex flex-col items-center px-6 pt-[80px]">
-        {/* 1. HABIT SPARK */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-[10px] uppercase font-normal"
-          style={{ letterSpacing: '0.25em', color: '#cccccc', fontWeight: 400 }}
-        >
-          HABIT SPARK
-        </motion.p>
-
-        {/* 2. Spark — 120px, hero */}
-        <motion.div
-          className="relative flex items-center justify-center mt-10"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.4, ease: [0, 0, 0.2, 1] }}
-        >
-          <motion.div
-            className="relative"
-            animate={{ y: [0, -6] }}
-            transition={{ duration: 3, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-5">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center -translate-y-10">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.15 }}
+            className="text-[12px] sm:text-[13px] uppercase tracking-[0.26em] font-medium mb-8"
+            style={{ color: '#7a7a7a', fontWeight: 500 }}
           >
-            <svg
-              viewBox="-7 -22 14 44"
-              className="w-[120px] h-[120px]"
-              fill="none"
-              stroke="#000000"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <circle cx="0" cy="-14" r="5" />
-              <line x1="0" y1="-9" x2="0" y2="8" />
-              <line x1="0" y1="0" x2="-5" y2="7" />
-              <line x1="0" y1="0" x2="5" y2="7" />
-              <line x1="0" y1="8" x2="-4" y2="20" />
-              <line x1="0" y1="8" x2="4" y2="20" />
-            </svg>
-          </motion.div>
-        </motion.div>
+            Habit Spark
+          </motion.p>
 
-        {/* 3. Show up. */}
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.8, ease: [0, 0, 0.2, 1] }}
-          className="text-center font-light mt-6"
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 64,
-            fontWeight: 300,
-            color: '#000000',
-            letterSpacing: '-0.03em',
-          }}
-        >
-          Show up.
-        </motion.h1>
+          <motion.div
+            className="relative flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
+          >
+            <motion.div
+              className="relative"
+              animate={{ y: [0, -5] }}
+              transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+              style={{
+                filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
+              }}
+            >
+              <svg
+                viewBox="-7 -22 14 44"
+                className="w-[138px] h-[138px]"
+                fill="none"
+                stroke="#0d0d0d"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="0" cy="-14" r="5" />
+                <line x1="0" y1="-9" x2="0" y2="8" />
+                {/* Left arm - relaxed, still */}
+                <line x1="0" y1="0" x2="-5" y2="7" />
+                {/* Right arm - single piece waving from shoulder (0,0), higher like a real wave */}
+                <line x1="0" y1="0" x2="5" y2="-4">
+                  <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    values="-10 0 0; 18 0 0; -10 0 0"
+                    keyTimes="0;0.5;1"
+                    dur="1.8s"
+                    repeatCount="indefinite"
+                    calcMode="spline"
+                    keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                  />
+                </line>
+                <line x1="0" y1="8" x2="-4" y2="20" />
+                <line x1="0" y1="8" x2="4" y2="20" />
+              </svg>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            className="flex flex-col items-center mt-9"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
+          >
+            <p
+              className="font-display text-center font-light"
+              style={{
+                fontSize: 'clamp(36px, 9vw, 52px)',
+                fontWeight: 300,
+                color: '#444',
+                letterSpacing: '-0.03em',
+                lineHeight: 1.1,
+              }}
+            >
+              Show up.
+            </p>
+            <div
+              className="mt-4 mb-4 h-px w-14"
+              style={{ backgroundColor: 'rgba(249,115,22,0.28)' }}
+              aria-hidden
+            />
+            <motion.p
+              className="text-[13px] text-center leading-snug px-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
+              style={{ color: '#6b6b6b' }}
+            >
+              I’m Spark — the stickfigure haunting this habit tracker and keeping receipts when you don’t show up.
+            </motion.p>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Button */}
       <motion.div
-        className="fixed left-0 right-0 flex justify-center px-6"
-        style={{ bottom: 52 }}
+        className="fixed inset-x-0 bottom-0 flex justify-center px-5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 1.2 }}
+        transition={{ duration: 0.7, delay: 1.35 }}
       >
         <motion.button
           onClick={next}
-          className="w-full max-w-[340px] h-[52px] rounded-[50px] text-[15px] text-white"
+          className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white"
           style={{
-            backgroundColor: '#000000',
-            color: '#ffffff',
-            letterSpacing: '0.02em',
-            fontWeight: 500,
+            backgroundColor: '#0d0d0d',
+            letterSpacing: '0.04em',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
           }}
-          whileTap={{ scale: 0.97 }}
-          transition={{ duration: 0.1 }}
+          whileHover={{ boxShadow: '0 8px 32px rgba(0,0,0,0.14)' }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.12 }}
         >
           Get started
         </motion.button>
