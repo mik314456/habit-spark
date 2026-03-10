@@ -122,25 +122,10 @@ async function callCoachApi(
   systemPrompt: string,
   messages: { role: 'user' | 'assistant'; content: string }[],
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-  if (!apiKey) {
-    throw new Error('Missing Anthropic API key. Set VITE_ANTHROPIC_API_KEY.');
-  }
-
-  const res = await fetch('/api/anthropic/v1/messages', {
+  const res = await fetch('/api/spark', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      system: systemPrompt,
-      messages,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system: systemPrompt, messages }),
   });
 
   if (!res.ok) {

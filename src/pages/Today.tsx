@@ -206,9 +206,6 @@ async function fetchSparkQuip(params: {
   totalHabits: number;
   habitNames: string[];
 }): Promise<string> {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY as string | undefined;
-  if (!apiKey) return getTimeContext(params.hour);
-
   const { hour, bestStreak, completedToday, totalHabits, habitNames } = params;
   const timeLabel = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 17 ? 'afternoon' : hour >= 17 && hour < 22 ? 'evening' : 'night';
 
@@ -223,22 +220,12 @@ Examples:
 
 Output nothing but the single line.`;
 
-  const userPrompt = `Time: ${timeLabel} (${hour}:00). Best streak: ${bestStreak} days. Completed today: ${completedToday}/${totalHabits} habits. Habit names: ${habitNames.length ? habitNames.join(', ') : 'none'}.`;
+  const messages = [{ role: 'user' as const, content: `Time: ${timeLabel} (${hour}:00). Best streak: ${bestStreak} days. Completed today: ${completedToday}/${totalHabits} habits. Habit names: ${habitNames.length ? habitNames.join(', ') : 'none'}.` }];
 
-  const res = await fetch('/api/anthropic/v1/messages', {
+  const res = await fetch('/api/spark', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 60,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system: systemPrompt, messages }),
   });
 
   if (!res.ok) return getTimeContext(hour);
@@ -727,33 +714,7 @@ export default function Today() {
           </div>
         )}
 
-        {/* Quick Stats row */}
-        {activeHabits.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center justify-center gap-2 mt-5 mb-5"
-          >
-            <button
-              type="button"
-              onClick={() => navigate('/progress')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50 hover:bg-foreground/15 transition-colors"
-            >
-              <Flame className="w-3.5 h-3.5" />
-              {bestStreak}
-            </button>
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50">
-              <CheckSquare className="w-3.5 h-3.5" />
-              {totalCompletions}
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50">
-              <Calendar className="w-3.5 h-3.5" />
-              {daysSinceStarted}d
-            </div>
-          </motion.div>
-        )}
-
-        {/* Weekly tracker — single 7-column grid for perfect alignment */}
+        {/* This week — above Quick Stats (positions swapped) */}
         {activeHabits.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
@@ -768,9 +729,7 @@ export default function Today() {
                 Week {getISOWeek(now)} · {format(now, 'MMMM')}
               </p>
             </div>
-            {/* Grid: same font size and spacing as Progress "This week" — gap-2, text-[10px], w-9 h-9 cells */}
             <div className="grid grid-cols-7 gap-2 place-items-center">
-              {/* Row 1: day names (Mon, Tue, …) — text-[10px] font-medium like Progress */}
               {Array.from({ length: 7 }, (_, dayIndex) => {
                 const d = addDays(startOfWeek(now, { weekStartsOn: 1 }), dayIndex);
                 const label = format(d, 'EEE');
@@ -791,7 +750,6 @@ export default function Today() {
                   </div>
                 );
               })}
-              {/* Rows 2+ : one row per habit, 7 cells each — w-9 h-9 like Progress */}
               {activeHabits.map(habit => {
                 const week = weekCompletionByHabit[habit.id];
                 if (!week || week.length !== 7) return null;
@@ -824,7 +782,6 @@ export default function Today() {
                 });
               })}
             </div>
-            {/* Legend */}
             <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-border">
               {activeHabits.map(habit => (
                 <div key={habit.id} className="flex items-center gap-2">
@@ -835,6 +792,32 @@ export default function Today() {
                   <span className="text-[11px] text-muted-foreground font-body">{habit.title}</span>
                 </div>
               ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Quick Stats row — streak, completions, days (below This week) */}
+        {activeHabits.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center gap-2 mt-5 mb-5"
+          >
+            <button
+              type="button"
+              onClick={() => navigate('/progress')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50 hover:bg-foreground/15 transition-colors"
+            >
+              <Flame className="w-3.5 h-3.5" />
+              {bestStreak}
+            </button>
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50">
+              <CheckSquare className="w-3.5 h-3.5" />
+              {totalCompletions}
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground/10 text-foreground text-xs font-medium font-body border border-border/50">
+              <Calendar className="w-3.5 h-3.5" />
+              {daysSinceStarted}d
             </div>
           </motion.div>
         )}
