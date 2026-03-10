@@ -15,6 +15,16 @@ function logSupabaseError(context: string, error: unknown): void {
   });
 }
 
+async function ensureUserExists(userId: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase
+    .from('users')
+    .upsert({ id: userId }, { onConflict: 'id' });
+  if (error) {
+    logSupabaseError('ensureUserExists', error);
+  }
+}
+
 /** DB row shape for habits table */
 interface DbHabit {
   id: string;
@@ -104,6 +114,7 @@ export async function upsertUserIdentity(userId: string, identity: string): Prom
  */
 export async function fetchHabits(userId: string): Promise<Habit[]> {
   if (!supabase) return [];
+  await ensureUserExists(userId);
   const { data, error } = await supabase
     .from('habits')
     .select('*')
@@ -165,6 +176,7 @@ export async function insertHabit(
   habit: Omit<Habit, 'id' | 'createdAt' | 'archived'>,
 ): Promise<Habit | null> {
   if (!supabase) return null;
+  await ensureUserExists(userId);
   const row = habitToDbRow(habit, userId);
   const { data, error } = await supabase.from('habits').insert(row).select().single();
   if (error) {
@@ -204,6 +216,7 @@ export async function setCompletionInSupabase(
   type: 'completed' | 'skipped' | null,
 ): Promise<void> {
   if (!supabase) return;
+  await ensureUserExists(userId);
   const { data: existing, error: selectError } = await supabase
     .from('habit_completions')
     .select('id')
