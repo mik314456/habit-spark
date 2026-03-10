@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { AppState, Habit, HabitLog, loadState, saveState, getToday, generateId, MilestoneCelebration } from '@/lib/habitData';
+import { useAuth, isSupabaseConfigured } from '@/hooks/useAuth';
+import {
+  fetchAppStateFromSupabase,
+  upsertUserIdentity,
+  insertHabit,
+  updateHabitInSupabase,
+  setCompletionInSupabase,
+} from '@/lib/supabaseSync';
 
 interface AppContextType {
   state: AppState;
@@ -25,10 +33,30 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(loadState);
+  const { userId, ready: authReady } = useAuth();
+  const supabaseLoadedRef = useRef(false);
 
   const reminderSentRef = React.useRef<Record<string, string>>({});
   const dontMissTwiceSentRef = React.useRef<Record<string, string>>({});
   const notificationPermissionRequestedRef = React.useRef(false);
+
+  // Load state from Supabase when auth is ready and we have a user
+  useEffect(() => {
+    if (!authReady || !userId || !isSupabaseConfigured() || supabaseLoadedRef.current) return;
+    supabaseLoadedRef.current = true;
+    fetchAppStateFromSupabase(userId).then(remote => {
+      if (!remote) return;
+      const hasRemoteData = (remote.habits?.length ?? 0) > 0 || (remote.identityStatement?.length ?? 0) > 0;
+      if (!hasRemoteData) return;
+      setState(prev => ({
+        ...prev,
+        onboardingComplete: prev.onboardingComplete || hasRemoteData,
+        identityStatement: remote.identityStatement ?? prev.identityStatement,
+        habits: remote.habits ?? prev.habits,
+        habitLogs: remote.habitLogs ?? prev.habitLogs,
+      }));
+    }).catch(() => { /* fallback: keep localStorage state */ });
+  }, [authReady, userId]);
 
   useEffect(() => {
     saveState(state);
@@ -36,7 +64,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = useCallback((identity: string) => {
     setState(prev => ({ ...prev, onboardingComplete: true, identityStatement: identity }));
-  }, []);
+    if (userId && isSupabaseConfigured()) {
+      upsertUserIdentity(userId, identity).catch(() => {});
+    }
+  }, [userId]);
 
   const updateIdentityStatement = useCallback((identity: string) => {
     setState(prev => ({ ...prev, identityStatement: identity }));
@@ -47,7 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addHabit = useCallback((habit: Omit<Habit, 'id' | 'createdAt' | 'archived'>) => {
-    const newHabit: Habit = {
+    const localHabit: Habit = {
       ...habit,
       id: generateId(),
       createdAt: new Date().toISOString(),
@@ -55,8 +86,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       smartReminderEnabled: habit.smartReminderEnabled ?? false,
       reminderTime: habit.reminderTime ?? habit.timeOfDay,
     };
-    setState(prev => ({ ...prev, habits: [...prev.habits, newHabit] }));
-  }, []);
+    setState(prev => ({ ...prev, habits: [...prev.habits, localHabit] }));
+    if (userId && isSupabaseConfigured()) {
+      insertHabit(userId, habit).then(inserted => {
+        if (inserted) {
+          setState(prev => ({
+            ...prev,
+            habits: prev.habits.map(h => (h.id === localHabit.id ? inserted : h)),
+          }));
+        }
+      }).catch(() => {});
+    }
+  }, [userId]);
 
   const updateHabit = useCallback((habitId: string, updates: Partial<Habit>) => {
     setState(prev => ({
@@ -69,10 +110,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const today = getToday();
     setState(prev => {
       const existingLog = prev.habitLogs.find(l => l.habitId === habitId && l.date === today && l.completed);
+      const isRemoving = !!existingLog;
+      if (userId && isSupabaseConfigured()) {
+        setCompletionInSupabase(userId, habitId, today, isRemoving ? null : 'completed').catch(() => {});
+      }
       if (existingLog) {
         return { ...prev, habitLogs: prev.habitLogs.filter(l => l.id !== existingLog.id) };
       }
-      // Remove any skip log for today first
       const filtered = prev.habitLogs.filter(l => !(l.habitId === habitId && l.date === today));
       const newLog: HabitLog = {
         id: generateId(),
@@ -84,10 +128,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
       return { ...prev, habitLogs: [...filtered, newLog] };
     });
-  }, []);
+  }, [userId]);
 
   const skipHabit = useCallback((habitId: string) => {
     const today = getToday();
+    if (userId && isSupabaseConfigured()) {
+      setCompletionInSupabase(userId, habitId, today, 'skipped').catch(() => {});
+    }
     setState(prev => {
       const filtered = prev.habitLogs.filter(l => !(l.habitId === habitId && l.date === today));
       const newLog: HabitLog = {
@@ -100,9 +147,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
       return { ...prev, habitLogs: [...filtered, newLog] };
     });
-  }, []);
+  }, [userId]);
 
   const setHabitLogForDate = useCallback((habitId: string, date: string, type: 'completed' | 'skipped' | null) => {
+    if (userId && isSupabaseConfigured()) {
+      setCompletionInSupabase(userId, habitId, date, type).catch(() => {});
+    }
     setState(prev => {
       const filtered = prev.habitLogs.filter(l => !(l.habitId === habitId && l.date === date));
       if (type === null) {
@@ -118,14 +168,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
       return { ...prev, habitLogs: [...filtered, newLog] };
     });
-  }, []);
+  }, [userId]);
 
   const deleteHabit = useCallback((habitId: string) => {
+    if (userId && isSupabaseConfigured()) {
+      updateHabitInSupabase(userId, habitId, { is_active: false }).catch(() => {});
+    }
     setState(prev => ({
       ...prev,
       habits: prev.habits.map(h => h.id === habitId ? { ...h, archived: true } : h),
     }));
-  }, []);
+  }, [userId]);
 
   const isHabitCompletedToday = useCallback((habitId: string) => {
     const today = getToday();
