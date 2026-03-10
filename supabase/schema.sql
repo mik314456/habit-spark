@@ -44,24 +44,36 @@ create table user_streaks (
   last_completed_date text
 );
 
--- Optional: RLS policies so each user only sees their own data
+-- RLS: one policy per table so authenticated users can do all operations on their own rows
 alter table users enable row level security;
 alter table habits enable row level security;
 alter table habit_completions enable row level security;
 alter table user_streaks enable row level security;
 
-create policy "Users can read own row" on users for select using (auth.uid() = id);
-create policy "Users can update own row" on users for update using (auth.uid() = id);
-create policy "Users can insert own row" on users for insert with check (auth.uid() = id);
+-- Drop any existing policies (names may vary from earlier versions)
+drop policy if exists "Users can read own row" on users;
+drop policy if exists "Users can update own row" on users;
+drop policy if exists "Users can insert own row" on users;
+drop policy if exists "Users can view own data" on users;
+drop policy if exists "Users can insert own data" on users;
+drop policy if exists "Users can update own data" on users;
 
-create policy "Users can read own habits" on habits for select using (auth.uid() = user_id);
-create policy "Users can insert own habits" on habits for insert with check (auth.uid() = user_id);
-create policy "Users can update own habits" on habits for update using (auth.uid() = user_id);
+drop policy if exists "Users can read own habits" on habits;
+drop policy if exists "Users can insert own habits" on habits;
+drop policy if exists "Users can update own habits" on habits;
+drop policy if exists "Users can view own habits" on habits;
 
-create policy "Users can read own completions" on habit_completions for select using (auth.uid() = user_id);
-create policy "Users can insert own completions" on habit_completions for insert with check (auth.uid() = user_id);
-create policy "Users can delete own completions" on habit_completions for delete using (auth.uid() = user_id);
+drop policy if exists "Users can read own completions" on habit_completions;
+drop policy if exists "Users can insert own completions" on habit_completions;
+drop policy if exists "Users can delete own completions" on habit_completions;
+drop policy if exists "Users can view own completions" on habit_completions;
 
-create policy "Users can read own streaks" on user_streaks for select using (auth.uid() = user_id);
-create policy "Users can insert own streaks" on user_streaks for insert with check (auth.uid() = user_id);
-create policy "Users can update own streaks" on user_streaks for update using (auth.uid() = user_id);
+drop policy if exists "Users can read own streaks" on user_streaks;
+drop policy if exists "Users can insert own streaks" on user_streaks;
+drop policy if exists "Users can update own streaks" on user_streaks;
+drop policy if exists "Users can view own streaks" on user_streaks;
+
+create policy "Enable all for authenticated users" on users for all using (auth.uid() = id);
+create policy "Enable all for authenticated users" on habits for all using (auth.uid() = user_id);
+create policy "Enable all for authenticated users" on habit_completions for all using (auth.uid() = user_id);
+create policy "Enable all for authenticated users" on user_streaks for all using (auth.uid() = user_id);

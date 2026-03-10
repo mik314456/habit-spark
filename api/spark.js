@@ -3,13 +3,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.error('[spark] ANTHROPIC_API_KEY is not set');
+    return res.status(500).json({ error: 'Server misconfiguration: missing API key' });
+  }
+
   const { messages, system } = req.body;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
@@ -21,5 +27,14 @@ export default async function handler(req, res) {
   });
 
   const data = await response.json();
-  res.status(response.status).json(data);
+
+  if (!response.ok) {
+    console.error('[spark] Anthropic API error:', response.status, data);
+    return res.status(response.status).json({
+      error: data?.error?.message || data?.message || 'Anthropic API request failed',
+      ...data,
+    });
+  }
+
+  res.status(200).json(data);
 }

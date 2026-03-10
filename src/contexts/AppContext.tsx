@@ -87,16 +87,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       smartReminderEnabled: habit.smartReminderEnabled ?? false,
       reminderTime: habit.reminderTime ?? habit.timeOfDay,
     };
-    setState(prev => ({ ...prev, habits: [...prev.habits, localHabit] }));
     if (userId && isSupabaseConfigured()) {
       insertHabit(userId, habit).then(inserted => {
         if (inserted) {
-          setState(prev => ({
-            ...prev,
-            habits: prev.habits.map(h => (h.id === localHabit.id ? inserted : h)),
-          }));
+          setState(prev => ({ ...prev, habits: [...prev.habits, inserted] }));
+        } else {
+          setState(prev => ({ ...prev, habits: [...prev.habits, localHabit] }));
         }
-      }).catch(() => {});
+      }).catch(() => {
+        setState(prev => ({ ...prev, habits: [...prev.habits, localHabit] }));
+      });
+    } else {
+      setState(prev => ({ ...prev, habits: [...prev.habits, localHabit] }));
     }
   }, [userId]);
 
