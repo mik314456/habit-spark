@@ -4,6 +4,17 @@ import type { HabitColor } from '@/lib/habitData';
 
 const DEFAULT_COLOR: HabitColor = 'coral';
 
+function logSupabaseError(context: string, error: unknown): void {
+  const err = error as { message?: string; code?: string; details?: unknown; hint?: string };
+  console.error(`[supabaseSync] ${context} failed:`, {
+    message: err?.message,
+    code: err?.code,
+    details: err?.details,
+    hint: err?.hint,
+    full: error,
+  });
+}
+
 /** DB row shape for habits table */
 interface DbHabit {
   id: string;
@@ -68,7 +79,11 @@ function habitToDbRow(habit: Omit<Habit, 'id' | 'createdAt' | 'archived'> & { id
 export async function fetchUserIdentity(userId: string): Promise<string> {
   if (!supabase) return '';
   const { data, error } = await supabase.from('users').select('identity').eq('id', userId).single();
-  if (error || !data) return '';
+  if (error) {
+    logSupabaseError('fetchUserIdentity', error);
+    return '';
+  }
+  if (!data) return '';
   return (data.identity as string) ?? '';
 }
 
@@ -77,10 +92,11 @@ export async function fetchUserIdentity(userId: string): Promise<string> {
  */
 export async function upsertUserIdentity(userId: string, identity: string): Promise<void> {
   if (!supabase) return;
-  await supabase.from('users').upsert(
+  const { error } = await supabase.from('users').upsert(
     { id: userId, identity: identity || null },
     { onConflict: 'id' },
   );
+  if (error) logSupabaseError('upsertUserIdentity', error);
 }
 
 /**
@@ -93,7 +109,10 @@ export async function fetchHabits(userId: string): Promise<Habit[]> {
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
-  if (error) return [];
+  if (error) {
+    logSupabaseError('fetchHabits', error);
+    return [];
+  }
   return (data as DbHabit[]).map(dbHabitToHabit);
 }
 
@@ -106,7 +125,10 @@ export async function fetchCompletions(userId: string): Promise<HabitLog[]> {
     .from('habit_completions')
     .select('*')
     .eq('user_id', userId);
-  if (error) return [];
+  if (error) {
+    logSupabaseError('fetchCompletions', error);
+    return [];
+  }
   return (data as DbCompletion[]).map(row => ({
     id: row.id,
     habitId: row.habit_id,
@@ -145,7 +167,10 @@ export async function insertHabit(
   if (!supabase) return null;
   const row = habitToDbRow(habit, userId);
   const { data, error } = await supabase.from('habits').insert(row).select().single();
-  if (error) return null;
+  if (error) {
+    logSupabaseError('insertHabit', error);
+    return null;
+  }
   return dbHabitToHabit(data as DbHabit);
 }
 
@@ -165,7 +190,8 @@ export async function updateHabitInSupabase(
   if (updates.location !== undefined) payload.location = updates.location;
   if (updates.identity !== undefined) payload.identity = updates.identity;
   if (Object.keys(payload).length === 0) return;
-  await supabase.from('habits').update(payload).eq('id', habitId).eq('user_id', userId);
+  const { error } = await supabase.from('habits').update(payload).eq('id', habitId).eq('user_id', userId);
+  if (error) logSupabaseError('updateHabitInSupabase', error);
 }
 
 /**
@@ -178,32 +204,36 @@ export async function setCompletionInSupabase(
   type: 'completed' | 'skipped' | null,
 ): Promise<void> {
   if (!supabase) return;
-  const { data: existing } = await supabase
+  const { data: existing, error: selectError } = await supabase
     .from('habit_completions')
     .select('id')
     .eq('user_id', userId)
     .eq('habit_id', habitId)
     .eq('date', date)
     .maybeSingle();
+  if (selectError) logSupabaseError('setCompletionInSupabase (select)', selectError);
 
   if (existing) {
-    await supabase.from('habit_completions').delete().eq('id', existing.id);
+    const { error: deleteError } = await supabase.from('habit_completions').delete().eq('id', existing.id);
+    if (deleteError) logSupabaseError('setCompletionInSupabase (delete)', deleteError);
   }
   if (type === 'completed') {
-    await supabase.from('habit_completions').insert({
+    const { error: insertError } = await supabase.from('habit_completions').insert({
       user_id: userId,
       habit_id: habitId,
       date,
       completed: true,
       skipped: false,
     });
+    if (insertError) logSupabaseError('setCompletionInSupabase (insert completed)', insertError);
   } else if (type === 'skipped') {
-    await supabase.from('habit_completions').insert({
+    const { error: insertError } = await supabase.from('habit_completions').insert({
       user_id: userId,
       habit_id: habitId,
       date,
       completed: false,
       skipped: true,
     });
+    if (insertError) logSupabaseError('setCompletionInSupabase (insert skipped)', insertError);
   }
 }
