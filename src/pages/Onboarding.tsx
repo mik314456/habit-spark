@@ -64,12 +64,12 @@ export default function Onboarding() {
   const popularTemplateIds = ['1', '2', '3', '4', '5', '6'];
 
   const screens = [
-    // Screen 0: Light, premium welcome — warm cream, editorial, Spark as hero
+    // Screen 0: Light, premium welcome — locked to pure white background
     <motion.div
       key="welcome"
       className="fixed inset-0 flex flex-col overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse 100% 80% at 50% -10%, rgba(255,252,248,0.6) 0%, transparent 50%), #fefdfb',
+        background: '#ffffff',
       }}
     >
       <div
@@ -254,7 +254,7 @@ export default function Onboarding() {
             </p>
           </div>
 
-          <div className="mt-6 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+          <div className="mt-6 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
               I want to be…
             </label>
@@ -274,8 +274,8 @@ export default function Onboarding() {
                 onClick={() => setIdentity(chip)}
                 className={`px-4 py-2 rounded-full text-[13px] font-body border transition-all ${
                   identity === chip
-                    ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)] dark:text-white'
-                    : 'border-[color:var(--card-border-color)] bg-card text-muted-foreground hover:border-[color:var(--accent-color)]/60'
+                ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] text-[color:var(--accent-color)]'
+                    : 'border-[color:var(--card-border-color)] bg-white text-muted-foreground hover:border-[color:var(--accent-color)]/60'
                 }`}
               >
                 {chip}
@@ -457,7 +457,7 @@ export default function Onboarding() {
             })}
           </div>
 
-          <div className="mt-4 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+          <div className="mt-4 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
               Or write your own habit
             </label>
@@ -563,7 +563,7 @@ export default function Onboarding() {
             </p>
           </div>
 
-          <div className="mt-6 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+          <div className="mt-6 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <div className="flex items-center gap-3">
               {selectedTemplate && (
                 (() => {
@@ -593,7 +593,7 @@ export default function Onboarding() {
             )}
           </div>
 
-          <div className="mt-5 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+          <div className="mt-5 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
               2-minute version (edit if you like)
             </label>
@@ -677,7 +677,7 @@ export default function Onboarding() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4">
-            <div className="rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <div className="rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
               <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
                 Time
               </label>
@@ -689,7 +689,7 @@ export default function Onboarding() {
               />
             </div>
 
-            <div className="rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
+            <div className="rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
               <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
                 Location
               </label>
@@ -703,7 +703,7 @@ export default function Onboarding() {
             </div>
           </div>
 
-          <div className="mt-6 p-5 rounded-2xl bg-card/80 border border-[color:var(--card-border-color)] mb-auto">
+          <div className="mt-6 p-5 rounded-2xl bg-white border border-[color:var(--card-border-color)] mb-auto">
             <p className="text-center font-display text-lg italic text-muted-foreground">
               I will{' '}
               <span className="text-[color:var(--accent-color)] font-semibold not-italic">{habitAction}</span>{' '}
