@@ -4,6 +4,10 @@ import { useApp } from '@/contexts/AppContext';
 import { HABIT_TEMPLATES, HABIT_CATEGORIES, HabitTemplate } from '@/lib/habitData';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
 
+/** Premium shadow for onboarding CTAs (same orange as Spark = var(--accent-color)) */
+const ONBOARDING_CTA_SHADOW = '0 2px 8px rgba(0,0,0,0.06), 0 8px 28px rgba(250, 160, 100, 0.22), inset 0 1px 0 rgba(255,255,255,0.15)';
+const ONBOARDING_CTA_SHADOW_HOVER = '0 4px 12px rgba(0,0,0,0.08), 0 12px 36px rgba(250, 160, 100, 0.28), inset 0 1px 0 rgba(255,255,255,0.2)';
+
 const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 300 : -300,
@@ -77,7 +81,7 @@ export default function Onboarding() {
       />
 
       <div className="relative z-10 flex-1 flex items-center justify-center px-5">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center -translate-y-16">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -157,11 +161,15 @@ export default function Onboarding() {
               Show up.
             </p>
             <motion.p
-              className="text-[13px] text-center leading-snug px-2"
+              className="text-[13px] text-center px-2 mt-8"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
-              style={{ color: '#6b6b6b' }}
+              style={{
+                color: '#aaaaaa',
+                lineHeight: 1.7,
+                maxWidth: 280,
+              }}
             >
               I’m Spark — the stickfigure haunting this habit tracker and keeping receipts when you don’t show up.
             </motion.p>
@@ -170,7 +178,7 @@ export default function Onboarding() {
       </div>
 
       <motion.div
-        className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto"
+        className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto pt-6"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -182,9 +190,9 @@ export default function Onboarding() {
           style={{
             backgroundColor: 'var(--accent-color)',
             letterSpacing: '0.04em',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
+            boxShadow: ONBOARDING_CTA_SHADOW,
           }}
-          whileHover={{ boxShadow: '0 8px 32px rgba(0,0,0,0.14)' }}
+          whileHover={{ boxShadow: ONBOARDING_CTA_SHADOW_HOVER }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.12 }}
         >
@@ -275,9 +283,10 @@ export default function Onboarding() {
             <button
               onClick={next}
               disabled={!identity.trim()}
-              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--accent-color)',
+                boxShadow: ONBOARDING_CTA_SHADOW,
               }}
             >
               Continue
@@ -365,9 +374,9 @@ export default function Onboarding() {
                         const Icon = getHabitIconByTitle(t.title);
                         return (
                           <Icon
-                            className={`w-6 h-6 ${
-                              isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : 'text-muted-foreground'
-                            }`}
+                            className="w-5 h-5 shrink-0"
+                            strokeWidth={1.5}
+                            style={{ color: '#000000' }}
                           />
                         );
                       })()}
@@ -418,11 +427,9 @@ export default function Onboarding() {
                             const Icon = getHabitIconByTitle(t.title);
                             return (
                               <Icon
-                                className={`w-6 h-6 ${
-                                  isSelected
-                                    ? 'text-[color:var(--accent-color)] dark:text-white'
-                                    : 'text-muted-foreground'
-                                }`}
+                                className="w-5 h-5 shrink-0"
+                                strokeWidth={1.5}
+                                style={{ color: '#000000' }}
                               />
                             );
                           })()}
@@ -482,9 +489,10 @@ export default function Onboarding() {
                 !selectedTemplate ||
                 (selectedTemplate && selectedTemplate.id === 'custom' && !customHabitTitle.trim())
               }
-              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--accent-color)',
+                boxShadow: ONBOARDING_CTA_SHADOW,
               }}
             >
               Continue
@@ -548,7 +556,13 @@ export default function Onboarding() {
               {selectedTemplate && (
                 (() => {
                   const Icon = getHabitIconByTitle(selectedTemplate.title);
-                  return <Icon className="w-7 h-7 text-muted-foreground" />;
+                  return (
+                    <Icon
+                      className="w-5 h-5 shrink-0"
+                      strokeWidth={1.5}
+                      style={{ color: '#000000' }}
+                    />
+                  );
                 })()
               )}
               <div className="flex flex-col">
@@ -584,9 +598,10 @@ export default function Onboarding() {
             <button
               onClick={next}
               disabled={!habitAction.trim()}
-              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: 'var(--accent-color)',
+                boxShadow: ONBOARDING_CTA_SHADOW,
               }}
             >
               Continue
@@ -686,9 +701,10 @@ export default function Onboarding() {
           <div className="mt-auto pt-6">
             <button
               onClick={finish}
-              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] shadow-card transition-transform active:scale-95"
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto tracking-[0.04em] transition-transform active:scale-95"
               style={{
                 backgroundColor: 'var(--accent-color)',
+                boxShadow: ONBOARDING_CTA_SHADOW,
               }}
             >
               Start building
@@ -701,16 +717,16 @@ export default function Onboarding() {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col max-w-md mx-auto overflow-hidden">
-      {/* Progress dots */}
-      <div className="flex gap-2 justify-center pt-4 px-6 z-10">
+      {/* Progress dots — black/grey only, no orange */}
+      <div className="flex gap-[6px] justify-center mt-5 px-6 z-10">
         {screens.map((_, i) => (
           <div
             key={i}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              i <= step
-                ? 'bg-[color:var(--accent-color)] w-8'
-                : 'bg-[color:var(--accent-light-color)] w-4'
-            }`}
+            className="h-[6px] w-[6px] rounded-full transition-all duration-300 shrink-0"
+            style={{
+              width: i === step ? 20 : 6,
+              backgroundColor: i <= step ? '#000000' : '#cccccc',
+            }}
           />
         ))}
       </div>
