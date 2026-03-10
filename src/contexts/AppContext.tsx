@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { AppState, Habit, HabitLog, loadState, saveState, getToday, generateId, MilestoneCelebration } from '@/lib/habitData';
-import { useAuth, isSupabaseConfigured } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import {
   fetchAppStateFromSupabase,
   upsertUserIdentity,

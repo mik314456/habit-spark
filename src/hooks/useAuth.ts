@@ -1,14 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-
-/** Whether Supabase is configured (env vars set). */
-export function isSupabaseConfigured(): boolean {
-  return !!(
-    typeof import.meta !== 'undefined' &&
-    import.meta.env?.VITE_SUPABASE_URL &&
-    import.meta.env?.VITE_SUPABASE_ANON_KEY
-  );
-}
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export interface AuthState {
   userId: string | null;
@@ -31,6 +22,7 @@ export function useAuth(): AuthState {
     let cancelled = false;
 
     async function init() {
+      if (!supabase) return;
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (cancelled) return;

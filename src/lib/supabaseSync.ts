@@ -66,6 +66,7 @@ function habitToDbRow(habit: Omit<Habit, 'id' | 'createdAt' | 'archived'> & { id
  * Fetch user's identity from users table.
  */
 export async function fetchUserIdentity(userId: string): Promise<string> {
+  if (!supabase) return '';
   const { data, error } = await supabase.from('users').select('identity').eq('id', userId).single();
   if (error || !data) return '';
   return (data.identity as string) ?? '';
@@ -75,6 +76,7 @@ export async function fetchUserIdentity(userId: string): Promise<string> {
  * Upsert user row (identity). Called on onboarding complete.
  */
 export async function upsertUserIdentity(userId: string, identity: string): Promise<void> {
+  if (!supabase) return;
   await supabase.from('users').upsert(
     { id: userId, identity: identity || null },
     { onConflict: 'id' },
@@ -85,6 +87,7 @@ export async function upsertUserIdentity(userId: string, identity: string): Prom
  * Fetch all habits for a user and convert to app Habit[].
  */
 export async function fetchHabits(userId: string): Promise<Habit[]> {
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from('habits')
     .select('*')
@@ -98,6 +101,7 @@ export async function fetchHabits(userId: string): Promise<Habit[]> {
  * Fetch all habit_completions for a user and convert to HabitLog[].
  */
 export async function fetchCompletions(userId: string): Promise<HabitLog[]> {
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from('habit_completions')
     .select('*')
@@ -118,6 +122,7 @@ export async function fetchCompletions(userId: string): Promise<HabitLog[]> {
  * Use local state for onboardingComplete, soundEnabled, milestoneCelebrations (not in DB yet).
  */
 export async function fetchAppStateFromSupabase(userId: string): Promise<Partial<AppState>> {
+  if (!supabase) return {};
   const [identity, habits, habitLogs] = await Promise.all([
     fetchUserIdentity(userId),
     fetchHabits(userId),
@@ -137,6 +142,7 @@ export async function insertHabit(
   userId: string,
   habit: Omit<Habit, 'id' | 'createdAt' | 'archived'>,
 ): Promise<Habit | null> {
+  if (!supabase) return null;
   const row = habitToDbRow(habit, userId);
   const { data, error } = await supabase.from('habits').insert(row).select().single();
   if (error) return null;
@@ -151,6 +157,7 @@ export async function updateHabitInSupabase(
   habitId: string,
   updates: { is_active?: boolean; title?: string; time?: string; location?: string; identity?: string },
 ): Promise<void> {
+  if (!supabase) return;
   const payload: Record<string, unknown> = {};
   if (updates.is_active !== undefined) payload.is_active = updates.is_active;
   if (updates.title !== undefined) payload.title = updates.title;
@@ -170,6 +177,7 @@ export async function setCompletionInSupabase(
   date: string,
   type: 'completed' | 'skipped' | null,
 ): Promise<void> {
+  if (!supabase) return;
   const { data: existing } = await supabase
     .from('habit_completions')
     .select('id')
