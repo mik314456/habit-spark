@@ -201,8 +201,12 @@ export default function Onboarding() {
       </motion.div>
     </motion.div>,
 
-    // Screen 1: Identity — refined to match welcome aesthetic
-    <motion.div key="identity" className="flex flex-col h-full px-5 pt-10 pb-6">
+    // Screen 1: Identity — always light
+    <motion.div
+      key="identity"
+      className="flex flex-col h-full px-5 pt-10 pb-6"
+      style={{ background: '#ffffff', color: '#000000' }}
+    >
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
         ← Back
       </button>
@@ -296,8 +300,12 @@ export default function Onboarding() {
       </div>
     </motion.div>,
 
-    // Screen 2: Habit Picker — refined to match welcome + identity
-    <motion.div key="picker" className="flex h-screen flex-col px-5 pt-10 pb-4">
+    // Screen 2: Habit Picker — always light
+    <motion.div
+      key="picker"
+      className="flex h-screen flex-col px-5 pt-10 pb-4"
+      style={{ background: '#ffffff', color: '#000000' }}
+    >
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
         ← Back
       </button>
@@ -366,7 +374,7 @@ export default function Onboarding() {
                       }}
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
                         isSelected
-                          ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card dark:text-white'
+                          ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card'
                           : 'border-[color:var(--card-border-color)] bg-card shadow-card hover:border-[color:var(--accent-color)]/60'
                       }`}
                     >
@@ -382,7 +390,7 @@ export default function Onboarding() {
                       })()}
                       <span
                         className={`text-sm font-body font-medium ${
-                          isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : ''
+                          isSelected ? 'text-[color:var(--accent-color)]' : ''
                         }`}
                       >
                         {t.title}
@@ -419,7 +427,7 @@ export default function Onboarding() {
                           }}
                           className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
                             isSelected
-                              ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card dark:text-white'
+                              ? 'border-[color:var(--accent-color)] bg-[color:var(--accent-light-color)] shadow-card'
                               : 'border-[color:var(--card-border-color)] bg-card shadow-card hover:border-[color:var(--accent-color)]/60'
                           }`}
                         >
@@ -435,7 +443,7 @@ export default function Onboarding() {
                           })()}
                           <span
                             className={`text-sm font-body font-medium ${
-                              isSelected ? 'text-[color:var(--accent-color)] dark:text-white' : ''
+                              isSelected ? 'text-[color:var(--accent-color)]' : ''
                             }`}
                           >
                             {t.title}
@@ -502,8 +510,12 @@ export default function Onboarding() {
       </div>
     </motion.div>,
 
-    // Screen 3: Habit Sizing — "Make it tiny"
-    <motion.div key="sizing" className="flex flex-col h-full px-5 pt-10 pb-6">
+    // Screen 3: Habit Sizing — "Make it tiny", always light
+    <motion.div
+      key="sizing"
+      className="flex flex-col h-full px-5 pt-10 pb-6"
+      style={{ background: '#ffffff', color: '#000000' }}
+    >
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
         ← Back
       </button>
@@ -611,8 +623,12 @@ export default function Onboarding() {
       </div>
     </motion.div>,
 
-    // Screen 4: Implementation Intention — "When and where?"
-    <motion.div key="intention" className="flex flex-col h-full px-5 pt-10 pb-6">
+    // Screen 4: Implementation Intention — "When and where?", always light
+    <motion.div
+      key="intention"
+      className="flex flex-col h-full px-5 pt-10 pb-6"
+      style={{ background: '#ffffff', color: '#000000' }}
+    >
       <button onClick={back} className="text-muted-foreground mb-6 self-start text-sm">
         ← Back
       </button>
@@ -717,7 +733,7 @@ export default function Onboarding() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col max-w-md mx-auto overflow-hidden"
+      className="fixed inset-0 flex flex-col max-w-md mx-auto overflow-hidden light"
       style={{ background: '#ffffff', colorScheme: 'light', color: '#000000' }}
     >
       {/* Progress dots — black/grey only, no orange */}

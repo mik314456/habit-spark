@@ -1,15 +1,19 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { getHabitIconByTitle } from '@/lib/habitIcons';
 import { useApp } from '@/contexts/AppContext';
 import TabBar from '@/components/TabBar';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, AlertTriangle } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Settings() {
   const { state, resetApp, updateHabit, updateIdentityStatement, setSoundEnabled } = useApp();
   const { theme, setTheme } = useTheme();
+  const { userId } = useAuth();
   const [identityDraft, setIdentityDraft] = useState(state.identityStatement ?? '');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const activeHabits = useMemo(
     () => state.habits.filter(h => !h.archived),
@@ -222,12 +226,7 @@ export default function Settings() {
               Danger zone
             </p>
             <button
-              onClick={() => {
-                if (window.confirm('This will reset all your data. Are you sure?')) {
-                  resetApp();
-                  window.location.href = '/';
-                }
-              }}
+              onClick={() => setShowResetConfirm(true)}
               className="w-full py-3 rounded-2xl bg-destructive/10 text-destructive font-medium text-sm font-body"
             >
               Reset all data
@@ -236,6 +235,90 @@ export default function Settings() {
         </div>
       </div>
       <TabBar />
+
+      {/* Premium reset confirmation overlay */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-sm mx-5 rounded-3xl border border-border-strong bg-card-surface px-5 py-6 shadow-elevated"
+              initial={{ scale: 0.95, y: 12, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 12, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-2xl bg-destructive/10 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold font-body text-foreground">
+                    Reset everything?
+                  </p>
+                  <p className="text-[11px] text-muted-foreground font-body">
+                    This clears habits, history, identity, and your cloud backup.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-card-surface-deep border border-border px-4 py-3 mb-4">
+                <p className="text-[11px] text-muted-foreground font-body">
+                  You&apos;ll be signed out and taken back to onboarding. This can&apos;t be undone.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 h-10 rounded-2xl border border-border bg-card text-sm font-medium font-body text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 h-10 rounded-2xl bg-destructive text-destructive-foreground text-sm font-medium font-body shadow-card"
+                  onClick={async () => {
+                    // 1. Delete Supabase data for this user (if configured)
+                    if (isSupabaseConfigured() && supabase && userId) {
+                      try {
+                        await supabase.from('habit_completions').delete().eq('user_id', userId);
+                        await supabase.from('habits').delete().eq('user_id', userId);
+                        await supabase.from('users').delete().eq('id', userId);
+                        await supabase.auth.signOut();
+                      } catch (err) {
+                        // eslint-disable-next-line no-console
+                        console.error('[settings] Supabase reset failed:', err);
+                      }
+                    }
+
+                    // 2. Clear all localStorage keys for this origin
+                    try {
+                      window.localStorage.clear();
+                    } catch {
+                      // ignore
+                    }
+
+                    // 3. Reset in-memory app state
+                    resetApp();
+
+                    // 4. Hide modal and redirect to onboarding
+                    setShowResetConfirm(false);
+                    window.location.href = '/';
+                  }}
+                >
+                  Yes, reset everything
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
