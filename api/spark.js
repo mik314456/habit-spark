@@ -1,3 +1,5 @@
+console.log('[spark] env keys available:', Object.keys(process.env).filter(k => k.includes('ANTHROPIC')));
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
