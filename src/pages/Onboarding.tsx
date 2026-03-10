@@ -716,7 +716,10 @@ export default function Onboarding() {
   ];
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col max-w-md mx-auto overflow-hidden">
+    <div
+      className="fixed inset-0 flex flex-col max-w-md mx-auto overflow-hidden"
+      style={{ background: '#ffffff', colorScheme: 'light', color: '#000000' }}
+    >
       {/* Progress dots — black/grey only, no orange */}
       <div className="flex gap-[6px] justify-center mt-5 px-6 z-10">
         {screens.map((_, i) => (
