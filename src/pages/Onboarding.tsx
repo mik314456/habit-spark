@@ -80,7 +80,7 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex items-start justify-center px-5 pt-10">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-5 pt-6 pb-24">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
           <motion.p
             initial={{ opacity: 0 }}
@@ -96,7 +96,7 @@ export default function Onboarding() {
           </motion.p>
 
           <motion.div
-            className="relative flex items-center justify-center mt-6"
+            className="relative flex items-center justify-center mt-4"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
@@ -143,7 +143,7 @@ export default function Onboarding() {
           </motion.div>
 
           <motion.div
-            className="flex flex-col items-center mt-24 mb-3"
+            className="flex flex-col items-center mt-8 mb-0"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
@@ -161,7 +161,7 @@ export default function Onboarding() {
               Show up.
             </p>
             <motion.p
-              className="text-[14px] text-center px-4 mt-6"
+              className="text-[14px] text-center px-4 mt-4"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
@@ -179,7 +179,7 @@ export default function Onboarding() {
 
       <motion.div
         className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto pt-2"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.7, delay: 1.35 }}
