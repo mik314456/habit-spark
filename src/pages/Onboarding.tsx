@@ -80,7 +80,7 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex items-start justify-center px-5 pt-20">
+      <div className="relative z-10 flex-1 flex items-start justify-center px-5 pt-16">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
           <motion.p
             initial={{ opacity: 0 }}
@@ -96,7 +96,7 @@ export default function Onboarding() {
           </motion.p>
 
           <motion.div
-            className="relative flex items-center justify-center mt-6"
+            className="relative flex items-center justify-center mt-4"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
@@ -111,7 +111,7 @@ export default function Onboarding() {
             >
             <svg
               viewBox="-7 -22 14 44"
-              className="w-[170px] h-[170px]"
+              className="w-[190px] h-[190px]"
               fill="none"
               stroke="#0d0d0d"
               strokeWidth="1.5"
@@ -143,7 +143,7 @@ export default function Onboarding() {
           </motion.div>
 
           <motion.div
-            className="flex flex-col items-center mt-9"
+            className="flex flex-col items-center mt-16"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
@@ -151,7 +151,7 @@ export default function Onboarding() {
             <p
               className="font-display text-center font-light"
               style={{
-                fontSize: 'clamp(36px, 9vw, 52px)',
+                fontSize: 'clamp(38px, 9.5vw, 56px)',
                 fontWeight: 300,
                 color: '#444',
                 letterSpacing: '-0.03em',
@@ -161,14 +161,14 @@ export default function Onboarding() {
               Show up.
             </p>
             <motion.p
-              className="text-[13px] text-center px-2 mt-8"
+              className="text-[14px] text-center px-4 mt-6"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
               style={{
                 color: '#6b6b6b',
                 lineHeight: 1.7,
-                maxWidth: 280,
+                maxWidth: 320,
               }}
             >
               “I’m Spark — the stickfigure haunting this habit tracker.”
