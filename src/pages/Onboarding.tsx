@@ -80,125 +80,126 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex items-center justify-center px-5 pt-6 pb-24">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.9, delay: 0.15 }}
-            className="text-[15px] sm:text-[16px] uppercase tracking-[0.26em] font-medium mb-8"
-            style={{ color: '#7a7a7a', fontWeight: 500 }}
-          >
-            Habit{' '}
-            <span style={{ color: 'var(--accent-color)' }}>
-              Spark
-            </span>
-          </motion.p>
-
-          <motion.div
-            className="relative flex items-center justify-center mt-4"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
-          >
-            <motion.div
-              className="relative"
-              animate={{ y: [0, -5] }}
-              transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
-              style={{
-                filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
-              }}
-            >
-            <svg
-              viewBox="-7 -22 14 44"
-              className="w-[220px] h-[220px]"
-              fill="none"
-              stroke="#0d0d0d"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-                <circle cx="0" cy="-14" r="5" />
-                <line x1="0" y1="-9" x2="0" y2="8" />
-                {/* Left arm - relaxed, still */}
-                <line x1="0" y1="0" x2="-5" y2="7" />
-                {/* Right arm - single piece waving from shoulder (0,0), higher like a real wave */}
-                <line x1="0" y1="0" x2="5" y2="-4">
-                  <animateTransform
-                    attributeName="transform"
-                    type="rotate"
-                    values="-10 0 0; 18 0 0; -10 0 0"
-                    keyTimes="0;0.5;1"
-                    dur="1.8s"
-                    repeatCount="indefinite"
-                    calcMode="spline"
-                    keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
-                  />
-                </line>
-                <line x1="0" y1="8" x2="-4" y2="20" />
-                <line x1="0" y1="8" x2="4" y2="20" />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="flex flex-col items-center mt-8 mb-0"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
-          >
-            <p
-              className="font-display text-center font-light"
-              style={{
-                fontSize: 'clamp(38px, 9.5vw, 56px)',
-                fontWeight: 300,
-                color: '#444',
-                letterSpacing: '-0.03em',
-                lineHeight: 1.1,
-              }}
-            >
-              Show up.
-            </p>
+      <div className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col h-full">
+          {/* Top block: logo + illustration */}
+          <div className="flex flex-col items-center pt-8">
             <motion.p
-              className="text-[14px] text-center px-4 mt-4"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
-              style={{
-                color: '#6b6b6b',
-                lineHeight: 1.7,
-                maxWidth: 320,
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.9, delay: 0.15 }}
+              className="text-[15px] sm:text-[16px] uppercase tracking-[0.26em] font-medium mb-6"
+              style={{ color: '#7a7a7a', fontWeight: 500 }}
             >
-              “I’m Spark — the stickfigure haunting this habit tracker.”
+              Habit{' '}
+              <span style={{ color: 'var(--accent-color)' }}>
+                Spark
+              </span>
             </motion.p>
-          </motion.div>
+
+            <motion.div
+              className="relative flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
+            >
+              <motion.div
+                className="relative"
+                animate={{ y: [0, -5] }}
+                transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+                style={{
+                  filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
+                }}
+              >
+                <svg
+                  viewBox="-7 -22 14 44"
+                  className="w-[220px] h-[220px]"
+                  fill="none"
+                  stroke="#0d0d0d"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <circle cx="0" cy="-14" r="5" />
+                  <line x1="0" y1="-9" x2="0" y2="8" />
+                  {/* Left arm - relaxed, still */}
+                  <line x1="0" y1="0" x2="-5" y2="7" />
+                  {/* Right arm - single piece waving from shoulder (0,0), higher like a real wave */}
+                  <line x1="0" y1="0" x2="5" y2="-4">
+                    <animateTransform
+                      attributeName="transform"
+                      type="rotate"
+                      values="-10 0 0; 18 0 0; -10 0 0"
+                      keyTimes="0;0.5;1"
+                      dur="1.8s"
+                      repeatCount="indefinite"
+                      calcMode="spline"
+                      keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                    />
+                  </line>
+                  <line x1="0" y1="8" x2="-4" y2="20" />
+                  <line x1="0" y1="8" x2="4" y2="20" />
+                </svg>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Middle block: headline + quote, vertically centered between top block and CTA */}
+          <div className="flex-1 flex items-center justify-center">
+            <motion.div
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
+            >
+              <p
+                className="font-display text-center font-light"
+                style={{
+                  fontSize: 'clamp(38px, 9.5vw, 56px)',
+                  fontWeight: 300,
+                  color: '#444',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.1,
+                }}
+              >
+                Show up.
+              </p>
+              <motion.p
+                className="text-[14px] text-center px-4 mt-4"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
+                style={{
+                  color: '#6b6b6b',
+                  lineHeight: 1.7,
+                  maxWidth: 320,
+                }}
+              >
+                “I’m Spark — the stickfigure haunting this habit tracker.”
+              </motion.p>
+            </motion.div>
+          </div>
+
+          {/* Bottom block: CTA pinned near bottom with safe-area padding handled by outer container */}
+          <div className="pt-4">
+            <motion.button
+              onClick={next}
+              className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+                letterSpacing: '0.04em',
+                boxShadow: ONBOARDING_CTA_SHADOW,
+              }}
+              whileHover={{ boxShadow: ONBOARDING_CTA_SHADOW_HOVER }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.12 }}
+            >
+              Get started
+            </motion.button>
+          </div>
         </div>
       </div>
-
-      <motion.div
-        className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto pt-2"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7, delay: 1.35 }}
-      >
-        <motion.button
-          onClick={next}
-          className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white"
-          style={{
-            backgroundColor: 'var(--accent-color)',
-            letterSpacing: '0.04em',
-            boxShadow: ONBOARDING_CTA_SHADOW,
-          }}
-          whileHover={{ boxShadow: ONBOARDING_CTA_SHADOW_HOVER }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.12 }}
-        >
-          Get started
-        </motion.button>
-      </motion.div>
     </motion.div>,
 
     // Screen 1: Identity — always light
