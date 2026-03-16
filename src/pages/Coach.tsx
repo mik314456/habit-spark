@@ -432,7 +432,7 @@ export default function Coach() {
           )}
         </div>
 
-        <div className="flex-shrink-0 space-y-2 pt-2">
+        <div className="flex-shrink-0 space-y-1">
           {showQuickReplies && (
             <motion.div
               initial={{ opacity: 0, y: 4 }}

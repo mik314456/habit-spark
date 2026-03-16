@@ -80,13 +80,13 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex items-center justify-center px-5">
+      <div className="relative z-10 flex-1 flex items-start justify-center px-5 pt-20">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.9, delay: 0.15 }}
-            className="text-[12px] sm:text-[13px] uppercase tracking-[0.26em] font-medium mb-8"
+            className="text-[15px] sm:text-[16px] uppercase tracking-[0.26em] font-medium mb-8"
             style={{ color: '#7a7a7a', fontWeight: 500 }}
           >
             Habit{' '}
@@ -96,7 +96,7 @@ export default function Onboarding() {
           </motion.p>
 
           <motion.div
-            className="relative flex items-center justify-center"
+            className="relative flex items-center justify-center mt-6"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
@@ -111,7 +111,7 @@ export default function Onboarding() {
             >
             <svg
               viewBox="-7 -22 14 44"
-              className="w-[138px] h-[138px]"
+              className="w-[170px] h-[170px]"
               fill="none"
               stroke="#0d0d0d"
               strokeWidth="1.5"
@@ -166,12 +166,12 @@ export default function Onboarding() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
               style={{
-                color: '#aaaaaa',
+                color: '#6b6b6b',
                 lineHeight: 1.7,
                 maxWidth: 280,
               }}
             >
-              I’m Spark — the stickfigure haunting this habit tracker and keeping receipts when you don’t show up.
+              “I’m Spark — the stickfigure haunting this habit tracker.”
             </motion.p>
           </motion.div>
         </div>
@@ -229,30 +229,9 @@ export default function Onboarding() {
           </h1>
 
 
-          <div className="mt-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[22px] h-[22px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="0" cy="-14" r="4.2" />
-                <line x1="0" y1="-9.5" x2="0" y2="6" />
-                <line x1="0" y1="-1" x2="-4.5" y2="5" />
-                <line x1="0" y1="-1" x2="4.5" y2="5" />
-                <line x1="0" y1="6" x2="-3.5" y2="15" />
-                <line x1="0" y1="6" x2="3.5" y2="15" />
-              </svg>
-            </div>
-            <p className="text-[14px] text-muted-foreground italic font-body">
-              Spark: “C’mon. Pick one version of you.”
-            </p>
-          </div>
+          <p className="mt-4 text-[14px] text-muted-foreground italic font-body">
+            Spark: “C’mon. Pick one version of you.”
+          </p>
 
           <div className="mt-6 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <label className="block text-[12px] font-medium text-muted-foreground font-body mb-1.5">
@@ -328,30 +307,9 @@ export default function Onboarding() {
           </h1>
 
 
-          <div className="mt-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[22px] h-[22px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="0" cy="-14" r="4.2" />
-                <line x1="0" y1="-9.5" x2="0" y2="6" />
-                <line x1="0" y1="-1" x2="-4.5" y2="5" />
-                <line x1="0" y1="-1" x2="4.5" y2="5" />
-                <line x1="0" y1="6" x2="-3.5" y2="15" />
-                <line x1="0" y1="6" x2="3.5" y2="15" />
-              </svg>
-            </div>
-            <p className="text-[14px] text-muted-foreground italic font-body">
+          <p className="mt-4 text-[14px] text-muted-foreground italic font-body">
               Spark: “One habit. Not twelve. We’re being realistic.”
-            </p>
-          </div>
+          </p>
 
           <div className="mt-6 space-y-6">
             {/* Popular first */}
@@ -538,30 +496,9 @@ export default function Onboarding() {
           </h1>
 
 
-          <div className="mt-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[22px] h-[22px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="0" cy="-14" r="4.2" />
-                <line x1="0" y1="-9.5" x2="0" y2="6" />
-                <line x1="0" y1="-1" x2="-4.5" y2="5" />
-                <line x1="0" y1="-1" x2="4.5" y2="5" />
-                <line x1="0" y1="6" x2="-3.5" y2="15" />
-                <line x1="0" y1="6" x2="3.5" y2="15" />
-              </svg>
-            </div>
-            <p className="text-[14px] text-muted-foreground italic font-body">
-              Spark: “If it feels too easy, perfect. You’ll actually do it.”
-            </p>
-          </div>
+          <p className="mt-4 text-[14px] text-muted-foreground italic font-body">
+            Spark: “If it feels too easy, perfect. You’ll actually do it.”
+          </p>
 
           <div className="mt-6 rounded-2xl bg-white border border-[color:var(--card-border-color)] shadow-sm px-4 py-3">
             <div className="flex items-center gap-3">
@@ -652,26 +589,7 @@ export default function Onboarding() {
 
 
           <div className="mt-4 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full border border-[color:var(--card-border-color)] bg-card flex items-center justify-center shadow-sm">
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[22px] h-[22px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="0" cy="-14" r="4.2" />
-                <line x1="0" y1="-9.5" x2="0" y2="6" />
-                <line x1="0" y1="-1" x2="-4.5" y2="5" />
-                <line x1="0" y1="-1" x2="4.5" y2="5" />
-                <line x1="0" y1="6" x2="-3.5" y2="15" />
-                <line x1="0" y1="6" x2="3.5" y2="15" />
-              </svg>
-            </div>
-            <p className="text-[14px] text-muted-foreground italic font-body">
+<p className="text-[14px] text-muted-foreground italic font-body">
               Spark: “If it’s not on the calendar, it’s a wish.”
             </p>
           </div>

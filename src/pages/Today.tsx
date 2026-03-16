@@ -251,6 +251,14 @@ export default function Today() {
   const [celebrating, setCelebrating] = useState(false);
   const prevCompletedRef = useRef<number | null>(null);
 
+  // Avoid flashing the "No habits yet" empty state while habits are still being added
+  // (especially right after onboarding) — give habits a moment to load first.
+  const [emptyStateReady, setEmptyStateReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setEmptyStateReady(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const state = app?.state;
   const isHabitCompletedToday = app?.isHabitCompletedToday ?? (() => false);
   const isHabitSkippedToday = app?.isHabitSkippedToday ?? (() => false);
@@ -664,23 +672,25 @@ export default function Today() {
 
         {/* Habits */}
         {activeHabits.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
-            <p className="mb-4 flex justify-center">
-              <Sprout className="w-10 h-10 text-[var(--accent-color)]" />
-            </p>
-            <h2 className="text-xl mb-2 font-semibold text-foreground">No habits yet</h2>
-            <p className="text-muted-foreground text-sm mb-6">Add your first habit and start building.</p>
-            <button
-              onClick={() => setShowAddHabit(true)}
-              className="px-6 py-3 rounded-2xl gradient-warm text-primary-foreground font-semibold shadow-elevated"
+          emptyStateReady ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
             >
-              Add your first habit
-            </button>
-          </motion.div>
+              <p className="mb-4 flex justify-center">
+                <Sprout className="w-10 h-10 text-[var(--accent-color)]" />
+              </p>
+              <h2 className="text-xl mb-2 font-semibold text-foreground">No habits yet</h2>
+              <p className="text-muted-foreground text-sm mb-6">Add your first habit and start building.</p>
+              <button
+                onClick={() => setShowAddHabit(true)}
+                className="px-6 py-3 rounded-2xl gradient-warm text-primary-foreground font-semibold shadow-elevated"
+              >
+                Add your first habit
+              </button>
+            </motion.div>
+          ) : null
         ) : (
           <div className="today-habit-list">
             {activeHabits.map(habit => {
