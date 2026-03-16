@@ -80,123 +80,124 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 pt-8 pb-24">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center mt-20">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.9, delay: 0.15 }}
-            className="text-[16px] sm:text-[17px] uppercase tracking-[0.26em] font-medium mb-4 -mt-12"
-            style={{ color: '#7a7a7a', fontWeight: 500 }}
-          >
-            Habit{' '}
-            <span style={{ color: 'var(--accent-color)' }}>
-              Spark
-            </span>
-          </motion.p>
-
-          <motion.div
-            className="relative flex items-center justify-center mt-4"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
-          >
-            <motion.div
-              className="relative"
-              animate={{ y: [0, -5] }}
-              transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
-              style={{
-                filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
-              }}
-            >
-              <svg
-                viewBox="-7 -22 14 44"
-                className="w-[240px] h-[240px]"
-                fill="none"
-                stroke="#0d0d0d"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <circle cx="0" cy="-14" r="5" />
-                <line x1="0" y1="-9" x2="0" y2="8" />
-                <line x1="0" y1="0" x2="-5" y2="7" />
-                <line x1="0" y1="0" x2="5" y2="-4">
-                  <animateTransform
-                    attributeName="transform"
-                    type="rotate"
-                    values="-10 0 0; 18 0 0; -10 0 0"
-                    keyTimes="0;0.5;1"
-                    dur="1.8s"
-                    repeatCount="indefinite"
-                    calcMode="spline"
-                    keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
-                  />
-                </line>
-                <line x1="0" y1="8" x2="-4" y2="20" />
-                <line x1="0" y1="8" x2="4" y2="20" />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="flex flex-col items-center mt-16 mb-4"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
-          >
-            <p
-              className="font-display text-center font-light"
-              style={{
-                fontSize: 'clamp(36px, 9vw, 52px)',
-                fontWeight: 300,
-                color: '#444',
-                letterSpacing: '-0.03em',
-                lineHeight: 1.1,
-              }}
-            >
-              Show up.
-            </p>
+      <div className="relative z-10 flex-1 flex flex-col px-5 pt-10 pb-24">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col h-full">
+          {/* Top block: Habit Spark + progress dots (logo area) */}
+          <div className="flex justify-center">
             <motion.p
-              className="text-[13px] text-center px-2 mt-8"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
-              style={{
-                color: '#aaaaaa',
-                lineHeight: 1.7,
-                maxWidth: 280,
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.9, delay: 0.15 }}
+              className="mt-8 text-[19px] sm:text-[21px] uppercase tracking-[0.26em] font-medium"
+              style={{ color: '#7a7a7a', fontWeight: 500 }}
             >
-              I’m Spark — the stickfigure haunting this habit tracker.
+              Habit{' '}
+              <span style={{ color: 'var(--accent-color)' }}>
+                Spark
+              </span>
             </motion.p>
-          </motion.div>
+          </div>
+
+          {/* Middle block: illustration + text — figure is absolutely positioned so it doesn't push the text */}
+          <div className="relative flex flex-col items-center flex-1">
+            <motion.div
+              className="absolute top-24 inset-x-0 flex items-center justify-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.85, delay: 0.45, ease: [0.22, 0.6, 0.35, 1] }}
+            >
+              <motion.div
+                className="relative"
+                animate={{ y: [0, -5] }}
+                transition={{ duration: 4.5, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+                style={{
+                  filter: 'drop-shadow(0 14px 44px rgba(0,0,0,0.07))',
+                }}
+              >
+                <svg
+                  viewBox="-7 -22 14 44"
+                  className="w-[240px] h-[240px]"
+                  fill="none"
+                  stroke="#0d0d0d"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <circle cx="0" cy="-14" r="5" />
+                  <line x1="0" y1="-9" x2="0" y2="8" />
+                  <line x1="0" y1="0" x2="-5" y2="7" />
+                  <line x1="0" y1="0" x2="5" y2="-4">
+                    <animateTransform
+                      attributeName="transform"
+                      type="rotate"
+                      values="-10 0 0; 18 0 0; -10 0 0"
+                      keyTimes="0;0.5;1"
+                      dur="1.8s"
+                      repeatCount="indefinite"
+                      calcMode="spline"
+                      keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                    />
+                  </line>
+                  <line x1="0" y1="8" x2="-4" y2="20" />
+                  <line x1="0" y1="8" x2="4" y2="20" />
+                </svg>
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              className="flex flex-col items-center mt-auto mb-8"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
+            >
+              <p
+                className="font-display text-center font-light"
+                style={{
+                  fontSize: 'clamp(40px, 10vw, 58px)',
+                  fontWeight: 300,
+                  color: '#444',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.1,
+                }}
+              >
+                Show up.
+              </p>
+              <motion.p
+                className="text-[15px] text-center px-2 mt-8"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 1.0, ease: [0.22, 0.6, 0.35, 1] }}
+                style={{
+                  color: '#6b6b6b',
+                  lineHeight: 1.7,
+                  maxWidth: 280,
+                }}
+              >
+                “I’m Spark — the stickfigure haunting this habit tracker.”
+              </motion.p>
+            </motion.div>
+          </div>
+
+          {/* Bottom block: CTA pinned near bottom */}
+          <div className="mt-auto pt-4 flex justify-center">
+            <motion.button
+              onClick={next}
+              className="w-[320px] max-w-full h-[54px] rounded-[50px] text-[15px] font-medium text-white"
+              style={{
+                backgroundColor: 'var(--accent-color)',
+                letterSpacing: '0.04em',
+                boxShadow: ONBOARDING_CTA_SHADOW,
+              }}
+              whileHover={{ boxShadow: ONBOARDING_CTA_SHADOW_HOVER }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.12 }}
+            >
+              Get started
+            </motion.button>
+          </div>
         </div>
       </div>
-
-      <motion.div
-        className="fixed inset-x-0 bottom-0 flex justify-center px-5 z-20 pointer-events-auto pt-6"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7, delay: 1.35 }}
-      >
-        <motion.button
-          onClick={next}
-          className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white"
-          style={{
-            backgroundColor: 'var(--accent-color)',
-            letterSpacing: '0.04em',
-            boxShadow: ONBOARDING_CTA_SHADOW,
-          }}
-          whileHover={{ boxShadow: ONBOARDING_CTA_SHADOW_HOVER }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.12 }}
-        >
-          Get started
-        </motion.button>
-      </motion.div>
     </motion.div>,
 
     // Screen 1: Identity — always light
