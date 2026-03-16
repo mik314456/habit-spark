@@ -81,9 +81,9 @@ export default function Onboarding() {
       />
 
       <div className="relative z-10 flex flex-1 flex-col px-5 pb-[calc(env(safe-area-inset-bottom,0px)+32px)]">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col h-full">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col h-full justify-between py-8">
           {/* Top block: logo + illustration */}
-          <div className="flex flex-col items-center pt-8">
+          <div className="flex flex-col items-center">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -145,8 +145,8 @@ export default function Onboarding() {
             </motion.div>
           </div>
 
-          {/* Middle block: headline + quote, vertically centered between top block and CTA */}
-          <div className="flex-1 flex items-center justify-center">
+          {/* Middle block: headline + quote */}
+          <div className="flex flex-col items-center">
             <motion.div
               className="flex flex-col items-center"
               initial={{ opacity: 0, y: 18 }}
@@ -182,7 +182,7 @@ export default function Onboarding() {
           </div>
 
           {/* Bottom block: CTA pinned near bottom with safe-area padding handled by outer container */}
-          <div className="pt-4">
+          <div className="pt-2">
             <motion.button
               onClick={next}
               className="w-full max-w-[320px] h-[54px] rounded-[50px] text-[15px] font-medium text-white mx-auto"
