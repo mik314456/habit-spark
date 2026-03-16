@@ -81,12 +81,12 @@ export default function Onboarding() {
       />
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 pt-8 pb-24">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center mt-20">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.9, delay: 0.15 }}
-            className="text-[16px] sm:text-[17px] uppercase tracking-[0.26em] font-medium mb-4 -mt-16"
+            className="text-[16px] sm:text-[17px] uppercase tracking-[0.26em] font-medium mb-4 -mt-12"
             style={{ color: '#7a7a7a', fontWeight: 500 }}
           >
             Habit{' '}
@@ -111,7 +111,7 @@ export default function Onboarding() {
             >
               <svg
                 viewBox="-7 -22 14 44"
-                className="w-[170px] h-[170px]"
+                className="w-[240px] h-[240px]"
                 fill="none"
                 stroke="#0d0d0d"
                 strokeWidth="1.5"
@@ -141,7 +141,7 @@ export default function Onboarding() {
           </motion.div>
 
           <motion.div
-            className="flex flex-col items-center mt-9"
+            className="flex flex-col items-center mt-16 mb-4"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, delay: 0.9, ease: [0.22, 0.6, 0.35, 1] }}
@@ -169,7 +169,7 @@ export default function Onboarding() {
                 maxWidth: 280,
               }}
             >
-              I’m Spark — the stickfigure haunting this habit tracker and keeping receipts when you don’t show up.
+              I’m Spark — the stickfigure haunting this habit tracker.
             </motion.p>
           </motion.div>
         </div>
