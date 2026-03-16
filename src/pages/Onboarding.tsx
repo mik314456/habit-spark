@@ -80,13 +80,13 @@ export default function Onboarding() {
         aria-hidden
       />
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 pt-10 pb-24">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 pt-8 pb-24">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.9, delay: 0.15 }}
-            className="text-[15px] sm:text-[16px] uppercase tracking-[0.26em] font-medium mb-8"
+            className="text-[16px] sm:text-[17px] uppercase tracking-[0.26em] font-medium mb-4 -mt-16"
             style={{ color: '#7a7a7a', fontWeight: 500 }}
           >
             Habit{' '}
